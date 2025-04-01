@@ -34,13 +34,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (xhr.status === 200) {
                 const resposta = xhr.responseText;
                 const pedidos = JSON.parse(resposta);
-                const litrosTotais = pedidos.pop(); // Remove o último item (litrosTotais)
+                const litrosTotais = pedidos.pop();
 
                 body.classList.remove('h-screen');
                 body.classList.add('h-full');
                 response.classList.toggle("hidden");
 
-                // Criar elementos sem sobrescrever o HTML diretamente
                 response.innerHTML = `
                     <h2 class="text-sm text-blue-600 font-bold">
                         Copie os códigos e insira no banco através da consulta InsertPedidosAEnviar.
@@ -99,12 +98,10 @@ document.addEventListener("DOMContentLoaded", function () {
         xhr.send(formData);
     });
 
-    // Evita comportamento padrão do navegador ao arrastar arquivos
     ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
         dropArea.addEventListener(eventName, (e) => e.preventDefault());
     });
 
-    // Adiciona efeito visual ao arrastar arquivos sobre a área de drop
     ["dragenter", "dragover"].forEach(eventName => {
         dropArea.addEventListener(eventName, () => dropArea.classList.add("border-green-500"));
     });
@@ -113,7 +110,6 @@ document.addEventListener("DOMContentLoaded", function () {
         dropArea.addEventListener(eventName, () => dropArea.classList.remove("border-green-500"));
     });
 
-    // Evento para soltar os arquivos na área de drop
     dropArea.addEventListener("drop", (e) => {
         const files = e.dataTransfer.files;
         fileInput.files = files;
@@ -129,16 +125,15 @@ document.addEventListener("DOMContentLoaded", function () {
         btn.classList.add('cursor-pointer');
         btn.classList.add('hover:bg-green-400');
     }
-    // Exibe a lista de arquivos selecionados de forma mais organizada
+
     function showFileList(files) {
         fileList.innerHTML = "<ul class='mt-2'>"; // Inicia a lista
         for (const file of files) {
             fileList.innerHTML += `<li class="text-gray-600">${file.name}</li>`;
         }
-        fileList.innerHTML += "</ul>"; // Fecha a lista
+        fileList.innerHTML += "</ul>";
     }
 
-    // Exibe arquivos selecionados manualmente
     fileInput.addEventListener("change", (e) => {
         toggleButton();
         showFileList(e.target.files);
