@@ -164,6 +164,7 @@ for ($row1 = 2; $row1 <= $highestRow1; $row1++) {
     }
 }
 $pedidos[] = [$litrosTotais];
+$pedidos = array_values(array_unique($pedidos, SORT_REGULAR));
 $jsonPedidos = json_encode($pedidos, true |JSON_PRETTY_PRINT);
 echo $jsonPedidos;
 

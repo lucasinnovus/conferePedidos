@@ -28,11 +28,10 @@
             <label id="loading" class="flex hidden justify-center items-center">
                 <img alt="loader" class="w-4/12" src="../assets/images/loader.gif"/>
             </label>
-            <button id="buttonform" name="submit" type="submit" class="w-8/12 bg-green-300 hover:bg-green-400 transition duration-150 rounded-md p-2">
+            <button id="buttonform" name="submit" type="submit" disabled class="w-8/12 cursor-not-allowed bg-gray-300 transition duration-150 rounded-md p-2">
                 <span class="font-bold">Enviar Planilhas</span>
             </button>
             <div id="response" class="mt-4 flex-col gap-3 hidden flex justify-center items-center text-center text-gray-700">
-                <h2 class="text-sm text-blue-600 font-bold"> Copie os códigos e insira no banco através da consulta InsertPedidosAEnviar.</h2>
             </div>
         </div>
     </form>
