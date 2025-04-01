@@ -70,6 +70,7 @@ $sheet2->getStyle('Y:Y')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_
 $sheet2->getStyle('Z:Z')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER);
 $sheet2->getStyle('AA:AA')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER);
 $sheet2->getStyle('AC:AC')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER);
+$sheet2->getStyle('AB:AB')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER);
 
 // Adiciona fórmulas às colunas E, F e H no arquivo 2
 $sheet2->setCellValue('Y2', '=SUBSTITUTE(UPPER(R2), "CATIVO-", "")');
@@ -130,8 +131,9 @@ for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
 
 // Aplicando PROC-V na Planilha 1
 
-$pedidos = [];
+$pedidosCativo = [];
 $litrosTotais = 0;
+
 
 for ($row1 = 2; $row1 <= $highestRow1; $row1++) {
     $chave1 = trim($sheet1->getCell($colunaChavePlanilha1 . $row1)->getCalculatedValue());
@@ -146,9 +148,7 @@ for ($row1 = 2; $row1 <= $highestRow1; $row1++) {
             // Somará todos os litros dos pedidos iguais à "#N/D. "
             $litro = $sheet1->getCell("G$row1")->getCalculatedValue();
             $litrosTotais += is_numeric($litro) ? $litro : 0;
-
-            $pedidos[] = "('$pedido')";
-
+            $pedidosCativo[] = "('$pedido')";
             // Define o erro #N/D real do Excel
             $valorEncontrado = '=NA()';
         }
@@ -163,10 +163,12 @@ for ($row1 = 2; $row1 <= $highestRow1; $row1++) {
         }
     }
 }
-$pedidos[] = [$litrosTotais];
-$pedidos = array_values(array_unique($pedidos, SORT_REGULAR));
-$jsonPedidos = json_encode($pedidos, true |JSON_PRETTY_PRINT);
-echo $jsonPedidos;
+$pedidosCativo = array_values(array_unique($pedidosCativo, SORT_REGULAR));
+$pedidos[] = [
+   "cativo" => $pedidosCativo,
+   "litrosTotaisCativo" => $litrosTotais,
+];
+
 
 // Definir colunas onde as chaves e os valores estão localizados
 $colunaChavePlanilha2 = 'Z';  // Chave na Planilha2
@@ -186,6 +188,10 @@ for ($row1 = 2; $row1 <= $highestRow1; $row1++) {
 }
 
 // Aplicando PROC-V na Planilha 2
+
+$pedidosPetronas = [];
+$LitrosTotaisPetronas = 0;
+
 for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
     $chave2 = trim($sheet2->getCell($colunaChavePlanilha2 . $row2)->getCalculatedValue());
 
@@ -193,6 +199,16 @@ for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
         if (isset($tabela_lookup2[$chave2])) {
             $valorEncontrado = $tabela_lookup2[$chave2];
         } else {
+
+            // printará o número do pedido relacionado cujo a diferença seja igual a "#N/D. ".
+            $pedidos2 = $sheet2->getCell("Y$row2")->getCalculatedValue();
+                
+            // Somará todos os litros dos pedidos iguais à "#N/D. "
+            $litro2 = $sheet2->getCell("AB$row2")->getCalculatedValue();
+            $LitrosTotaisPetronas += is_numeric($litro2) ? $litro2 : 0;
+            
+            $pedidosPetronas[] = "('$pedidos2')";
+
             // Define o erro #N/D real do Excel
             $valorEncontrado = '=NA()';
         }
@@ -208,6 +224,14 @@ for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
     }
 }
 
+$arraySemDuplicatas = array_keys(array_flip($pedidosPetronas));
+$pedidos[] = [
+    "petronas" => $arraySemDuplicatas,
+    "litrosTotaisPetronas" => $LitrosTotaisPetronas,
+];
+
+$jsonPedidos = json_encode($pedidos, true |JSON_PRETTY_PRINT);
+echo $jsonPedidos;
 $diretorioDestino = 'planilhas/';
 
 // Garante que a pasta de destino existe
