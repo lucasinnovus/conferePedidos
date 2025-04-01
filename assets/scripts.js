@@ -34,8 +34,10 @@ document.addEventListener("DOMContentLoaded", function () {
             if (xhr.status === 200) {
                 const resposta = xhr.responseText;
                 const pedidos = JSON.parse(resposta);
-                const litrosTotais = pedidos.pop();
-
+                const cativo = Object.values(pedidos[0])[0];
+                const litrosTotaisCativo = Object.values(pedidos[0])[1];
+                const petronas = Object.values(pedidos[1])[0];
+                const litrosTotaisPetronas = Object.values(pedidos[1])[1];
                 body.classList.remove('h-screen');
                 body.classList.add('h-full');
                 response.classList.toggle("hidden");
@@ -46,22 +48,39 @@ document.addEventListener("DOMContentLoaded", function () {
                     </h2>
                 `;
 
-                const listaPedidos = document.createElement("ul");
-                listaPedidos.id = "listaPedidos";
-                listaPedidos.classList.add("list-none", "mt-2");
-
-                pedidos.forEach((pedido, index) => {
-                    const li = document.createElement("li");
-                    li.textContent = pedido + (index !== pedidos.length - 1 ? "," : "");
-                    listaPedidos.appendChild(li);
-                });
-
-                response.appendChild(listaPedidos);
+                listaPedidos(cativo, "Cativo");
+                listaPedidos(petronas, "Petronas");
 
                 const litrosSpan = document.createElement("span");
                 litrosSpan.classList.add("text-green-600", "font-bold");
-                litrosSpan.textContent = `Litros Totais: ${litrosTotais}`;
+                litrosSpan.textContent = `Litros Totais: ${litrosTotaisCativo}`;
                 response.appendChild(litrosSpan);
+
+                let handleList = document.getElementById("petronas");
+                if (!handleList) {
+                    handleList = document.createElement('button');
+                    handleList.type = 'button';
+                    handleList.id = 'petronas';
+                    handleList.textContent = 'Pedidos Petronas';
+                    handleList.classList.add('mt-2', 'w-48', 'font-bold', 'cursor-pointer', 'bg-teal-300', 'hover:bg-teal-400', 'transition', 'duration-150', 'rounded-md', 'p-2');
+                    response.appendChild(handleList);
+                }
+
+                handleList.addEventListener('click', function (e) {
+                    const listaPedidosPetronas = document.getElementById('listaPedidosPetronas');
+                    const listaPedidosCativo = document.getElementById('listaPedidosCativo');
+                    listaPedidosCativo.classList.toggle('hidden');
+                    listaPedidosPetronas.classList.toggle('hidden')
+                    if (e.target.textContent === 'Pedidos Petronas') {
+                        e.target.textContent = 'Pedidos Cativo';
+                        litrosSpan.textContent = `Litros Totais: ${litrosTotaisPetronas}`;
+                        copyButton.classList.toggle('hidden');
+                    }else{
+                        e.target.textContent = 'Pedidos Petronas';
+                        litrosSpan.textContent = `Litros Totais: ${litrosTotaisCativo}`;
+                        copyButton.classList.toggle('hidden');
+                    }
+                })
 
                 let copyButton = document.getElementById("copy");
                 if (!copyButton) {
@@ -73,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     response.appendChild(copyButton);
 
                     copyButton.addEventListener("click", function () {
-                        const listaItens = document.querySelectorAll("#listaPedidos li");
+                        const listaItens = document.querySelectorAll("#listaPedidosCativo li");
                         const textoParaCopiar = Array.from(listaItens)
                             .map(li => li.textContent.trim())
                             .join('\n');
@@ -94,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
         xhr.onerror = function () {
             response.innerHTML = `<p class="text-red-500">Erro de conexão!</p>`;
         };
-
+        btn.disabled = true;
         xhr.send(formData);
     });
 
@@ -117,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
         toggleButton();
     });
 
-    function toggleButton(){
+    function toggleButton() {
         btn.disabled = !btn.disabled;
         btn.classList.remove('bg-gray-300');
         btn.classList.add('bg-green-300');
@@ -138,4 +157,21 @@ document.addEventListener("DOMContentLoaded", function () {
         toggleButton();
         showFileList(e.target.files);
     });
+
+    function listaPedidos(empresa,nome) {
+        const listaPedidos = document.createElement("ul");
+        listaPedidos.id = `listaPedidos${nome}`;
+        if(nome === "Petronas")
+            listaPedidos.classList.add("list-none", "mt-2", "hidden");
+        else
+        listaPedidos.classList.add("list-none", "mt-2");
+        empresa.forEach((pedido, index) => {
+            const li = document.createElement("li");
+            li.textContent = pedido + (index !== empresa.length - 1 ? "," : "");
+            listaPedidos.appendChild(li);
+        });
+        response.appendChild(listaPedidos);
+    }
 });
+
+
