@@ -140,6 +140,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Exibe arquivos selecionados manualmente
     fileInput.addEventListener("change", (e) => {
+        toggleButton();
         showFileList(e.target.files);
     });
 });
