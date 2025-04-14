@@ -4,7 +4,6 @@ namespace PhpOffice\PhpSpreadsheet\Calculation\Financial;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
 
 class InterestRate
 {
@@ -19,8 +18,10 @@ class InterestRate
      *
      * @param mixed $nominalRate Nominal interest rate as a float
      * @param mixed $periodsPerYear Integer number of compounding payments per year
+     *
+     * @return float|string
      */
-    public static function effective(mixed $nominalRate = 0, mixed $periodsPerYear = 0): string|float
+    public static function effective($nominalRate = 0, $periodsPerYear = 0)
     {
         $nominalRate = Functions::flattenSingleValue($nominalRate);
         $periodsPerYear = Functions::flattenSingleValue($periodsPerYear);
@@ -33,7 +34,7 @@ class InterestRate
         }
 
         if ($nominalRate <= 0 || $periodsPerYear < 1) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         return ((1 + $nominalRate / $periodsPerYear) ** $periodsPerYear) - 1;
@@ -49,7 +50,7 @@ class InterestRate
      *
      * @return float|string Result, or a string containing an error
      */
-    public static function nominal(mixed $effectiveRate = 0, mixed $periodsPerYear = 0): string|float
+    public static function nominal($effectiveRate = 0, $periodsPerYear = 0)
     {
         $effectiveRate = Functions::flattenSingleValue($effectiveRate);
         $periodsPerYear = Functions::flattenSingleValue($periodsPerYear);
@@ -62,7 +63,7 @@ class InterestRate
         }
 
         if ($effectiveRate <= 0 || $periodsPerYear < 1) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         // Calculate

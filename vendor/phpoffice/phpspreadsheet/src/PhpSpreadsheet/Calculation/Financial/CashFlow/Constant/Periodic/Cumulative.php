@@ -6,7 +6,6 @@ use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use PhpOffice\PhpSpreadsheet\Calculation\Financial\CashFlow\CashFlowValidations;
 use PhpOffice\PhpSpreadsheet\Calculation\Financial\Constants as FinancialConstants;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
 
 class Cumulative
 {
@@ -27,15 +26,17 @@ class Cumulative
      * @param mixed $type A number 0 or 1 and indicates when payments are due:
      *                    0 or omitted    At the end of the period.
      *                    1               At the beginning of the period.
+     *
+     * @return float|string
      */
     public static function interest(
-        mixed $rate,
-        mixed $periods,
-        mixed $presentValue,
-        mixed $start,
-        mixed $end,
-        mixed $type = FinancialConstants::PAYMENT_END_OF_PERIOD
-    ): string|float|int {
+        $rate,
+        $periods,
+        $presentValue,
+        $start,
+        $end,
+        $type = FinancialConstants::PAYMENT_END_OF_PERIOD
+    ) {
         $rate = Functions::flattenSingleValue($rate);
         $periods = Functions::flattenSingleValue($periods);
         $presentValue = Functions::flattenSingleValue($presentValue);
@@ -56,7 +57,7 @@ class Cumulative
 
         // Validate parameters
         if ($start < 1 || $start > $end) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         // Calculate
@@ -90,15 +91,17 @@ class Cumulative
      * @param mixed $type A number 0 or 1 and indicates when payments are due:
      *                    0 or omitted    At the end of the period.
      *                    1               At the beginning of the period.
+     *
+     * @return float|string
      */
     public static function principal(
-        mixed $rate,
-        mixed $periods,
-        mixed $presentValue,
-        mixed $start,
-        mixed $end,
-        mixed $type = FinancialConstants::PAYMENT_END_OF_PERIOD
-    ): string|float|int {
+        $rate,
+        $periods,
+        $presentValue,
+        $start,
+        $end,
+        $type = FinancialConstants::PAYMENT_END_OF_PERIOD
+    ) {
         $rate = Functions::flattenSingleValue($rate);
         $periods = Functions::flattenSingleValue($periods);
         $presentValue = Functions::flattenSingleValue($presentValue);
@@ -119,7 +122,7 @@ class Cumulative
 
         // Validate parameters
         if ($start < 1 || $start > $end) {
-            return ExcelError::VALUE();
+            return Functions::VALUE();
         }
 
         // Calculate

@@ -3,7 +3,6 @@
 namespace PhpOffice\PhpSpreadsheet\Calculation\Statistical\Averages;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
 use PhpOffice\PhpSpreadsheet\Calculation\MathTrig;
 use PhpOffice\PhpSpreadsheet\Calculation\Statistical\Averages;
 use PhpOffice\PhpSpreadsheet\Calculation\Statistical\Counts;
@@ -22,8 +21,10 @@ class Mean
      *        GEOMEAN(value1[,value2[, ...]])
      *
      * @param mixed ...$args Data values
+     *
+     * @return float|string
      */
-    public static function geometric(mixed ...$args): float|int|string
+    public static function geometric(...$args)
     {
         $aArgs = Functions::flattenArray($args);
 
@@ -35,7 +36,7 @@ class Mean
             }
         }
 
-        return ExcelError::NAN();
+        return Functions::NAN();
     }
 
     /**
@@ -48,13 +49,15 @@ class Mean
      *        HARMEAN(value1[,value2[, ...]])
      *
      * @param mixed ...$args Data values
+     *
+     * @return float|string
      */
-    public static function harmonic(mixed ...$args): string|float|int
+    public static function harmonic(...$args)
     {
         // Loop through arguments
         $aArgs = Functions::flattenArray($args);
         if (Minimum::min($aArgs) < 0) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         $returnValue = 0;
@@ -63,7 +66,7 @@ class Mean
             // Is it a numeric value?
             if ((is_numeric($arg)) && (!is_string($arg))) {
                 if ($arg <= 0) {
-                    return ExcelError::NAN();
+                    return Functions::NAN();
                 }
                 $returnValue += (1 / $arg);
                 ++$aCount;
@@ -75,7 +78,7 @@ class Mean
             return 1 / ($returnValue / $aCount);
         }
 
-        return ExcelError::NA();
+        return Functions::NA();
     }
 
     /**
@@ -89,8 +92,10 @@ class Mean
      *        TRIMEAN(value1[,value2[, ...]], $discard)
      *
      * @param mixed $args Data values
+     *
+     * @return float|string
      */
-    public static function trim(mixed ...$args): float|string
+    public static function trim(...$args)
     {
         $aArgs = Functions::flattenArray($args);
 
@@ -99,7 +104,7 @@ class Mean
 
         if ((is_numeric($percent)) && (!is_string($percent))) {
             if (($percent < 0) || ($percent > 1)) {
-                return ExcelError::NAN();
+                return Functions::NAN();
             }
 
             $mArgs = [];
@@ -121,6 +126,6 @@ class Mean
             return Averages::average($mArgs);
         }
 
-        return ExcelError::VALUE();
+        return Functions::VALUE();
     }
 }

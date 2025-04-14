@@ -14,11 +14,18 @@ use SimpleXMLElement;
 
 class Styles
 {
-    private Spreadsheet $spreadsheet;
+    /**
+     * @var Spreadsheet
+     */
+    private $spreadsheet;
 
-    protected bool $readDataOnly;
+    /**
+     * @var bool
+     */
+    protected $readDataOnly = false;
 
-    public static array $mappings = [
+    /** @var array */
+    public static $mappings = [
         'borderStyle' => [
             '0' => Border::BORDER_NONE,
             '1' => Border::BORDER_THIN,
@@ -261,12 +268,10 @@ class Styles
             $this->addBorderStyle($srssb, $styleArray, 'right');
             $this->addBorderDiagonal($srssb, $styleArray);
         }
-        //    TO DO
-        /*
         if (isset($style->Style->HyperLink)) {
+            //    TO DO
             $hyperlink = $style->Style->HyperLink->attributes();
         }
-        */
 
         return $styleArray;
     }

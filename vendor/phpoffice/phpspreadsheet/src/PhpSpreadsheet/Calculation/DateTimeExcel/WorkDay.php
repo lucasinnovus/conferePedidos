@@ -2,15 +2,11 @@
 
 namespace PhpOffice\PhpSpreadsheet\Calculation\DateTimeExcel;
 
-use DateTime;
-use PhpOffice\PhpSpreadsheet\Calculation\ArrayEnabled;
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 
 class WorkDay
 {
-    use ArrayEnabled;
-
     /**
      * WORKDAY.
      *
@@ -22,37 +18,27 @@ class WorkDay
      * Excel Function:
      *        WORKDAY(startDate,endDays[,holidays[,holiday[,...]]])
      *
-     * @param array|mixed $startDate Excel date serial value (float), PHP date timestamp (integer),
+     * @param mixed $startDate Excel date serial value (float), PHP date timestamp (integer),
      *                                        PHP DateTime object, or a standard date string
-     *                         Or can be an array of date values
-     * @param array|int $endDays The number of nonweekend and nonholiday days before or after
+     * @param int $endDays The number of nonweekend and nonholiday days before or after
      *                                        startDate. A positive value for days yields a future date; a
      *                                        negative value yields a past date.
-     *                         Or can be an array of int values
-     * @param null|mixed $dateArgs An array of dates (such as holidays) to exclude from the calculation
+     * @param mixed $dateArgs
      *
-     * @return array|DateTime|float|int|string Excel date/time serial value, PHP date/time serial value or PHP date/time object,
+     * @return mixed Excel date/time serial value, PHP date/time serial value or PHP date/time object,
      *                        depending on the value of the ReturnDateType flag
-     *         If an array of values is passed for the $startDate or $endDays,arguments, then the returned result
-     *            will also be an array with matching dimensions
      */
-    public static function date(mixed $startDate, array|int|string $endDays, mixed ...$dateArgs): array|float|int|DateTime|string
+    public static function date($startDate, $endDays, ...$dateArgs)
     {
-        if (is_array($startDate) || is_array($endDays)) {
-            return self::evaluateArrayArgumentsSubset(
-                [self::class, __FUNCTION__],
-                2,
-                $startDate,
-                $endDays,
-                ...$dateArgs
-            );
-        }
-
         //    Retrieve the mandatory start date and days that are referenced in the function definition
         try {
             $startDate = Helpers::getDateValue($startDate);
             $endDays = Helpers::validateNumericNull($endDays);
-            $holidayArray = array_map([Helpers::class, 'getDateValue'], Functions::flattenArray($dateArgs));
+            $dateArgs = Functions::flattenArray($dateArgs);
+            $holidayArray = [];
+            foreach ($dateArgs as $holidayDate) {
+                $holidayArray[] = Helpers::getDateValue($holidayDate);
+            }
         } catch (Exception $e) {
             return $e->getMessage();
         }
@@ -72,12 +58,15 @@ class WorkDay
 
     /**
      * Use incrementing logic to determine Workday.
+     *
+     * @return mixed
      */
-    private static function incrementing(float $startDate, int $endDays, array $holidayArray): float|int|DateTime
+    private static function incrementing(float $startDate, int $endDays, array $holidayArray)
     {
         //    Adjust the start date if it falls over a weekend
+
         $startDoW = self::getWeekDay($startDate, 3);
-        if ($startDoW >= 5) {
+        if (self::getWeekDay($startDate, 3) >= 5) {
             $startDate += 7 - $startDoW;
             --$endDays;
         }
@@ -131,12 +120,15 @@ class WorkDay
 
     /**
      * Use decrementing logic to determine Workday.
+     *
+     * @return mixed
      */
-    private static function decrementing(float $startDate, int $endDays, array $holidayArray): float|int|DateTime
+    private static function decrementing(float $startDate, int $endDays, array $holidayArray)
     {
         //    Adjust the start date if it falls over a weekend
+
         $startDoW = self::getWeekDay($startDate, 3);
-        if ($startDoW >= 5) {
+        if (self::getWeekDay($startDate, 3) >= 5) {
             $startDate += -$startDoW + 4;
             ++$endDays;
         }
@@ -180,7 +172,6 @@ class WorkDay
             }
             //    Adjust the calculated end date if it falls over a weekend
             $endDoW = self::getWeekDay($endDate, 3);
-            /** int $endDoW */
             if ($endDoW >= 5) {
                 $endDate += -$endDoW + 4;
             }
@@ -191,8 +182,8 @@ class WorkDay
 
     private static function getWeekDay(float $date, int $wd): int
     {
-        $result = Functions::scalar(Week::day($date, $wd));
+        $result = Week::day($date, $wd);
 
-        return is_int($result) ? $result : -1;
+        return is_string($result) ? -1 : $result;
     }
 }

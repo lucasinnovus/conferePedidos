@@ -3,7 +3,6 @@
 namespace PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 use PhpOffice\PhpSpreadsheet\Document\Properties;
-use PhpOffice\PhpSpreadsheet\Reader\Xlsx\Namespaces;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Shared\XMLWriter;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -15,7 +14,7 @@ class DocProps extends WriterPart
      *
      * @return string XML Output
      */
-    public function writeDocPropsApp(Spreadsheet $spreadsheet): string
+    public function writeDocPropsApp(Spreadsheet $spreadsheet)
     {
         // Create XML writer
         $objWriter = null;
@@ -30,8 +29,8 @@ class DocProps extends WriterPart
 
         // Properties
         $objWriter->startElement('Properties');
-        $objWriter->writeAttribute('xmlns', Namespaces::EXTENDED_PROPERTIES);
-        $objWriter->writeAttribute('xmlns:vt', Namespaces::PROPERTIES_VTYPES);
+        $objWriter->writeAttribute('xmlns', 'http://schemas.openxmlformats.org/officeDocument/2006/extended-properties');
+        $objWriter->writeAttribute('xmlns:vt', 'http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes');
 
         // Application
         $objWriter->writeElement('Application', 'Microsoft Excel');
@@ -57,7 +56,7 @@ class DocProps extends WriterPart
 
         // Variant
         $objWriter->startElement('vt:variant');
-        $objWriter->writeElement('vt:i4', (string) $spreadsheet->getSheetCount());
+        $objWriter->writeElement('vt:i4', $spreadsheet->getSheetCount());
         $objWriter->endElement();
 
         $objWriter->endElement();
@@ -69,7 +68,7 @@ class DocProps extends WriterPart
 
         // Vector
         $objWriter->startElement('vt:vector');
-        $objWriter->writeAttribute('size', (string) $spreadsheet->getSheetCount());
+        $objWriter->writeAttribute('size', $spreadsheet->getSheetCount());
         $objWriter->writeAttribute('baseType', 'lpstr');
 
         $sheetCount = $spreadsheet->getSheetCount();
@@ -93,9 +92,6 @@ class DocProps extends WriterPart
         // SharedDoc
         $objWriter->writeElement('SharedDoc', 'false');
 
-        // HyperlinkBase
-        $objWriter->writeElement('HyperlinkBase', $spreadsheet->getProperties()->getHyperlinkBase());
-
         // HyperlinksChanged
         $objWriter->writeElement('HyperlinksChanged', 'false');
 
@@ -113,7 +109,7 @@ class DocProps extends WriterPart
      *
      * @return string XML Output
      */
-    public function writeDocPropsCore(Spreadsheet $spreadsheet): string
+    public function writeDocPropsCore(Spreadsheet $spreadsheet)
     {
         // Create XML writer
         $objWriter = null;
@@ -128,11 +124,11 @@ class DocProps extends WriterPart
 
         // cp:coreProperties
         $objWriter->startElement('cp:coreProperties');
-        $objWriter->writeAttribute('xmlns:cp', Namespaces::CORE_PROPERTIES2);
-        $objWriter->writeAttribute('xmlns:dc', Namespaces::DC_ELEMENTS);
-        $objWriter->writeAttribute('xmlns:dcterms', Namespaces::DC_TERMS);
-        $objWriter->writeAttribute('xmlns:dcmitype', Namespaces::DC_DCMITYPE);
-        $objWriter->writeAttribute('xmlns:xsi', Namespaces::SCHEMA_INSTANCE);
+        $objWriter->writeAttribute('xmlns:cp', 'http://schemas.openxmlformats.org/package/2006/metadata/core-properties');
+        $objWriter->writeAttribute('xmlns:dc', 'http://purl.org/dc/elements/1.1/');
+        $objWriter->writeAttribute('xmlns:dcterms', 'http://purl.org/dc/terms/');
+        $objWriter->writeAttribute('xmlns:dcmitype', 'http://purl.org/dc/dcmitype/');
+        $objWriter->writeAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
 
         // dc:creator
         $objWriter->writeElement('dc:creator', $spreadsheet->getProperties()->getCreator());
@@ -182,7 +178,7 @@ class DocProps extends WriterPart
      *
      * @return null|string XML Output
      */
-    public function writeDocPropsCustom(Spreadsheet $spreadsheet): ?string
+    public function writeDocPropsCustom(Spreadsheet $spreadsheet)
     {
         $customPropertyList = $spreadsheet->getProperties()->getCustomProperties();
         if (empty($customPropertyList)) {
@@ -202,8 +198,8 @@ class DocProps extends WriterPart
 
         // cp:coreProperties
         $objWriter->startElement('Properties');
-        $objWriter->writeAttribute('xmlns', Namespaces::CUSTOM_PROPERTIES);
-        $objWriter->writeAttribute('xmlns:vt', Namespaces::PROPERTIES_VTYPES);
+        $objWriter->writeAttribute('xmlns', 'http://schemas.openxmlformats.org/officeDocument/2006/custom-properties');
+        $objWriter->writeAttribute('xmlns:vt', 'http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes');
 
         foreach ($customPropertyList as $key => $customProperty) {
             $propertyValue = $spreadsheet->getProperties()->getCustomPropertyValue($customProperty);
@@ -211,16 +207,16 @@ class DocProps extends WriterPart
 
             $objWriter->startElement('property');
             $objWriter->writeAttribute('fmtid', '{D5CDD505-2E9C-101B-9397-08002B2CF9AE}');
-            $objWriter->writeAttribute('pid', (string) ($key + 2));
+            $objWriter->writeAttribute('pid', $key + 2);
             $objWriter->writeAttribute('name', $customProperty);
 
             switch ($propertyType) {
                 case Properties::PROPERTY_TYPE_INTEGER:
-                    $objWriter->writeElement('vt:i4', (string) $propertyValue);
+                    $objWriter->writeElement('vt:i4', $propertyValue);
 
                     break;
                 case Properties::PROPERTY_TYPE_FLOAT:
-                    $objWriter->writeElement('vt:r8', sprintf('%F', $propertyValue));
+                    $objWriter->writeElement('vt:r8', $propertyValue);
 
                     break;
                 case Properties::PROPERTY_TYPE_BOOLEAN:
@@ -235,7 +231,7 @@ class DocProps extends WriterPart
 
                     break;
                 default:
-                    $objWriter->writeElement('vt:lpwstr', (string) $propertyValue);
+                    $objWriter->writeElement('vt:lpwstr', $propertyValue);
 
                     break;
             }

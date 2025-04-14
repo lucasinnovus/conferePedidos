@@ -6,9 +6,9 @@ use PhpOffice\PhpSpreadsheet\Calculation\Financial\Constants as FinancialConstan
 
 class InterestAndPrincipal
 {
-    protected float $interest;
+    protected $interest;
 
-    protected float $principal;
+    protected $principal;
 
     public function __construct(
         float $rate = 0.0,
@@ -24,7 +24,7 @@ class InterestAndPrincipal
         $principal = 0.0;
         for ($i = 1; $i <= $period; ++$i) {
             $interest = ($type === FinancialConstants::PAYMENT_BEGINNING_OF_PERIOD && $i == 1) ? 0 : -$capital * $rate;
-            $principal = (float) $payment - $interest;
+            $principal = $payment - $interest;
             $capital += $principal;
         }
 

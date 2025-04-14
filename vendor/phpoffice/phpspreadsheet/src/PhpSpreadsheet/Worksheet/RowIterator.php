@@ -2,52 +2,52 @@
 
 namespace PhpOffice\PhpSpreadsheet\Worksheet;
 
-use Iterator as NativeIterator;
+use Iterator;
 use PhpOffice\PhpSpreadsheet\Exception as PhpSpreadsheetException;
 
-/**
- * @implements NativeIterator<int, Row>
- */
-class RowIterator implements NativeIterator
+class RowIterator implements Iterator
 {
     /**
      * Worksheet to iterate.
+     *
+     * @var Worksheet
      */
-    private Worksheet $subject;
+    private $subject;
 
     /**
      * Current iterator position.
+     *
+     * @var int
      */
-    private int $position = 1;
+    private $position = 1;
 
     /**
      * Start position.
+     *
+     * @var int
      */
-    private int $startRow = 1;
+    private $startRow = 1;
 
     /**
      * End position.
+     *
+     * @var int
      */
-    private int $endRow = 1;
+    private $endRow = 1;
 
     /**
      * Create a new row iterator.
      *
      * @param Worksheet $subject The worksheet to iterate over
      * @param int $startRow The row number at which to start iterating
-     * @param ?int $endRow Optionally, the row number at which to stop iterating
+     * @param int $endRow Optionally, the row number at which to stop iterating
      */
-    public function __construct(Worksheet $subject, int $startRow = 1, ?int $endRow = null)
+    public function __construct(Worksheet $subject, $startRow = 1, $endRow = null)
     {
         // Set subject
         $this->subject = $subject;
         $this->resetEnd($endRow);
         $this->resetStart($startRow);
-    }
-
-    public function __destruct()
-    {
-        unset($this->subject);
     }
 
     /**
@@ -57,7 +57,7 @@ class RowIterator implements NativeIterator
      *
      * @return $this
      */
-    public function resetStart(int $startRow = 1): static
+    public function resetStart(int $startRow = 1)
     {
         if ($startRow > $this->subject->getHighestRow()) {
             throw new PhpSpreadsheetException(
@@ -77,11 +77,11 @@ class RowIterator implements NativeIterator
     /**
      * (Re)Set the end row.
      *
-     * @param ?int $endRow The row number at which to stop iterating
+     * @param int $endRow The row number at which to stop iterating
      *
      * @return $this
      */
-    public function resetEnd(?int $endRow = null): static
+    public function resetEnd($endRow = null)
     {
         $this->endRow = $endRow ?: $this->subject->getHighestRow();
 
@@ -95,7 +95,7 @@ class RowIterator implements NativeIterator
      *
      * @return $this
      */
-    public function seek(int $row = 1): static
+    public function seek(int $row = 1)
     {
         if (($row < $this->startRow) || ($row > $this->endRow)) {
             throw new PhpSpreadsheetException("Row $row is out of range ({$this->startRow} - {$this->endRow})");

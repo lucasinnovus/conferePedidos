@@ -2,14 +2,11 @@
 
 namespace PhpOffice\PhpSpreadsheet\Calculation\Engineering;
 
-use PhpOffice\PhpSpreadsheet\Calculation\ArrayEnabled;
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
+use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 
 class BesselI
 {
-    use ArrayEnabled;
-
     /**
      * BESSELI.
      *
@@ -24,22 +21,17 @@ class BesselI
      *
      * @param mixed $x A float value at which to evaluate the function.
      *                                If x is nonnumeric, BESSELI returns the #VALUE! error value.
-     *                      Or can be an array of values
      * @param mixed $ord The integer order of the Bessel function.
      *                                If ord is not an integer, it is truncated.
      *                                If $ord is nonnumeric, BESSELI returns the #VALUE! error value.
      *                                If $ord < 0, BESSELI returns the #NUM! error value.
-     *                      Or can be an array of values
      *
-     * @return array|float|string Result, or a string containing an error
-     *         If an array of numbers is passed as an argument, then the returned result will also be an array
-     *            with the same dimensions
+     * @return float|string Result, or a string containing an error
      */
-    public static function BESSELI(mixed $x, mixed $ord): array|string|float
+    public static function BESSELI($x, $ord)
     {
-        if (is_array($x) || is_array($ord)) {
-            return self::evaluateArrayArguments([self::class, __FUNCTION__], $x, $ord);
-        }
+        $x = Functions::flattenSingleValue($x);
+        $ord = Functions::flattenSingleValue($ord);
 
         try {
             $x = EngineeringValidations::validateFloat($x);
@@ -49,21 +41,25 @@ class BesselI
         }
 
         if ($ord < 0) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         $fResult = self::calculate($x, $ord);
 
-        return (is_nan($fResult)) ? ExcelError::NAN() : $fResult;
+        return (is_nan($fResult)) ? Functions::NAN() : $fResult;
     }
 
     private static function calculate(float $x, int $ord): float
     {
-        return match ($ord) {
-            0 => self::besselI0($x),
-            1 => self::besselI1($x),
-            default => self::besselI2($x, $ord),
-        };
+        // special cases
+        switch ($ord) {
+            case 0:
+                return self::besselI0($x);
+            case 1:
+                return self::besselI1($x);
+        }
+
+        return self::besselI2($x, $ord);
     }
 
     private static function besselI0(float $x): float
@@ -81,8 +77,8 @@ class BesselI
         $y = 3.75 / $ax;
 
         return (exp($ax) / sqrt($ax)) * (0.39894228 + $y * (0.1328592e-1 + $y * (0.225319e-2 + $y * (-0.157565e-2
-                            + $y * (0.916281e-2 + $y * (-0.2057706e-1 + $y * (0.2635537e-1
-                                        + $y * (-0.1647633e-1 + $y * 0.392377e-2))))))));
+                            + $y * (0.916281e-2 + $y * (-0.2057706e-1 + $y * (0.2635537e-1 +
+                                        $y * (-0.1647633e-1 + $y * 0.392377e-2))))))));
     }
 
     private static function besselI1(float $x): float
@@ -92,16 +88,16 @@ class BesselI
         if ($ax < 3.75) {
             $y = $x / 3.75;
             $y = $y * $y;
-            $ans = $ax * (0.5 + $y * (0.87890594 + $y * (0.51498869 + $y * (0.15084934 + $y * (0.2658733e-1
-                                    + $y * (0.301532e-2 + $y * 0.32411e-3))))));
+            $ans = $ax * (0.5 + $y * (0.87890594 + $y * (0.51498869 + $y * (0.15084934 + $y * (0.2658733e-1 +
+                                    $y * (0.301532e-2 + $y * 0.32411e-3))))));
 
             return ($x < 0.0) ? -$ans : $ans;
         }
 
         $y = 3.75 / $ax;
         $ans = 0.2282967e-1 + $y * (-0.2895312e-1 + $y * (0.1787654e-1 - $y * 0.420059e-2));
-        $ans = 0.39894228 + $y * (-0.3988024e-1 + $y * (-0.362018e-2 + $y * (0.163801e-2
-                        + $y * (-0.1031555e-1 + $y * $ans))));
+        $ans = 0.39894228 + $y * (-0.3988024e-1 + $y * (-0.362018e-2 + $y * (0.163801e-2 +
+                        $y * (-0.1031555e-1 + $y * $ans))));
         $ans *= exp($ax) / sqrt($ax);
 
         return ($x < 0.0) ? -$ans : $ans;

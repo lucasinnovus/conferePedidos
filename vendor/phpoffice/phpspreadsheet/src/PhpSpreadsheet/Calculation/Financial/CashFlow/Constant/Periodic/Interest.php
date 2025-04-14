@@ -6,7 +6,6 @@ use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use PhpOffice\PhpSpreadsheet\Calculation\Financial\CashFlow\CashFlowValidations;
 use PhpOffice\PhpSpreadsheet\Calculation\Financial\Constants as FinancialConstants;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
 
 class Interest
 {
@@ -29,15 +28,17 @@ class Interest
      * @param mixed $presentValue Present Value
      * @param mixed $futureValue Future Value
      * @param mixed $type Payment type: 0 = at the end of each period, 1 = at the beginning of each period
+     *
+     * @return float|string
      */
     public static function payment(
-        mixed $interestRate,
-        mixed $period,
-        mixed $numberOfPeriods,
-        mixed $presentValue,
-        mixed $futureValue = 0,
-        mixed $type = FinancialConstants::PAYMENT_END_OF_PERIOD
-    ): string|float {
+        $interestRate,
+        $period,
+        $numberOfPeriods,
+        $presentValue,
+        $futureValue = 0,
+        $type = FinancialConstants::PAYMENT_END_OF_PERIOD
+    ) {
         $interestRate = Functions::flattenSingleValue($interestRate);
         $period = Functions::flattenSingleValue($period);
         $numberOfPeriods = Functions::flattenSingleValue($numberOfPeriods);
@@ -58,7 +59,7 @@ class Interest
 
         // Validate parameters
         if ($period <= 0 || $period > $numberOfPeriods) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         // Calculate
@@ -87,7 +88,7 @@ class Interest
      * @param mixed $numberOfPeriods is the number of payments for the annuity
      * @param mixed $principleRemaining is the loan amount or present value of the payments
      */
-    public static function schedulePayment(mixed $interestRate, mixed $period, mixed $numberOfPeriods, mixed $principleRemaining): string|float
+    public static function schedulePayment($interestRate, $period, $numberOfPeriods, $principleRemaining)
     {
         $interestRate = Functions::flattenSingleValue($interestRate);
         $period = Functions::flattenSingleValue($period);
@@ -105,7 +106,7 @@ class Interest
 
         // Validate parameters
         if ($period <= 0 || $period > $numberOfPeriods) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         // Return value
@@ -148,15 +149,17 @@ class Interest
      *                      1               At the beginning of the period.
      * @param mixed $guess Your guess for what the rate will be.
      *                          If you omit guess, it is assumed to be 10 percent.
+     *
+     * @return float|string
      */
     public static function rate(
-        mixed $numberOfPeriods,
-        mixed $payment,
-        mixed $presentValue,
-        mixed $futureValue = 0.0,
-        mixed $type = FinancialConstants::PAYMENT_END_OF_PERIOD,
-        mixed $guess = 0.1
-    ): string|float {
+        $numberOfPeriods,
+        $payment,
+        $presentValue,
+        $futureValue = 0.0,
+        $type = FinancialConstants::PAYMENT_END_OF_PERIOD,
+        $guess = 0.1
+    ) {
         $numberOfPeriods = Functions::flattenSingleValue($numberOfPeriods);
         $payment = Functions::flattenSingleValue($payment);
         $presentValue = Functions::flattenSingleValue($presentValue);
@@ -165,7 +168,7 @@ class Interest
         $guess = ($guess === null) ? 0.1 : Functions::flattenSingleValue($guess);
 
         try {
-            $numberOfPeriods = CashFlowValidations::validateFloat($numberOfPeriods);
+            $numberOfPeriods = CashFlowValidations::validateInt($numberOfPeriods);
             $payment = CashFlowValidations::validateFloat($payment);
             $presentValue = CashFlowValidations::validatePresentValue($presentValue);
             $futureValue = CashFlowValidations::validateFutureValue($futureValue);
@@ -190,13 +193,13 @@ class Interest
             $rate = $rate1;
         }
 
-        return $close ? $rate : ExcelError::NAN();
+        return $close ? $rate : Functions::NAN();
     }
 
-    private static function rateNextGuess(float $rate, float $numberOfPeriods, float $payment, float $presentValue, float $futureValue, int $type): string|float
+    private static function rateNextGuess($rate, $numberOfPeriods, $payment, $presentValue, $futureValue, $type)
     {
         if ($rate == 0.0) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
         $tt1 = ($rate + 1) ** $numberOfPeriods;
         $tt2 = ($rate + 1) ** ($numberOfPeriods - 1);
@@ -205,7 +208,7 @@ class Interest
             * ($rate * $type + 1) / ($rate * $rate) + $numberOfPeriods
             * $payment * $tt2 * ($rate * $type + 1) / $rate + $payment * ($tt1 - 1) * $type / $rate;
         if ($denominator == 0) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         return $numerator / $denominator;

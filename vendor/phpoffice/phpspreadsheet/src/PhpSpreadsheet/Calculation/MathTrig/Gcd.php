@@ -4,7 +4,6 @@ namespace PhpOffice\PhpSpreadsheet\Calculation\MathTrig;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
 
 class Gcd
 {
@@ -17,8 +16,13 @@ class Gcd
      *
      * Excel Function:
      *        GCD(number1[,number2[, ...]])
+     *
+     * @param float|int $a
+     * @param float|int $b
+     *
+     * @return float|int
      */
-    private static function evaluateGCD(float|int $a, float|int $b): float|int
+    private static function evaluateGCD($a, $b)
     {
         return $b ? self::evaluateGCD($b, $a % $b) : $a;
     }
@@ -37,7 +41,7 @@ class Gcd
      *
      * @return float|int|string Greatest Common Divisor, or a string containing an error
      */
-    public static function evaluate(mixed ...$args)
+    public static function evaluate(...$args)
     {
         try {
             $arrayArgs = [];
@@ -53,7 +57,7 @@ class Gcd
         }
 
         if (count($arrayArgs) <= 0) {
-            return ExcelError::VALUE();
+            return Functions::VALUE();
         }
         $gcd = (int) array_pop($arrayArgs);
         do {

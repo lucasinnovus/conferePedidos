@@ -2,24 +2,21 @@
 
 namespace PhpOffice\PhpSpreadsheet\Calculation\Engineering;
 
-use PhpOffice\PhpSpreadsheet\Calculation\ArrayEnabled;
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
+use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 
 class BitWise
 {
-    use ArrayEnabled;
-
     const SPLIT_DIVISOR = 2 ** 24;
 
     /**
      * Split a number into upper and lower portions for full 32-bit support.
      *
-     * @return int[]
+     * @param float|int $number
      */
-    private static function splitNumber(float|int $number): array
+    private static function splitNumber($number): array
     {
-        return [(int) floor($number / self::SPLIT_DIVISOR), (int) fmod($number, self::SPLIT_DIVISOR)];
+        return [floor($number / self::SPLIT_DIVISOR), fmod($number, self::SPLIT_DIVISOR)];
     }
 
     /**
@@ -30,18 +27,13 @@ class BitWise
      * Excel Function:
      *        BITAND(number1, number2)
      *
-     * @param null|array|bool|float|int|string $number1 Or can be an array of values
-     * @param null|array|bool|float|int|string $number2 Or can be an array of values
+     * @param int $number1
+     * @param int $number2
      *
-     * @return array|int|string If an array of numbers is passed as an argument, then the returned result will also be an array
-     *            with the same dimensions
+     * @return int|string
      */
-    public static function BITAND(null|array|bool|float|int|string $number1, null|array|bool|float|int|string $number2): array|string|int|float
+    public static function BITAND($number1, $number2)
     {
-        if (is_array($number1) || is_array($number2)) {
-            return self::evaluateArrayArguments([self::class, __FUNCTION__], $number1, $number2);
-        }
-
         try {
             $number1 = self::validateBitwiseArgument($number1);
             $number2 = self::validateBitwiseArgument($number2);
@@ -51,7 +43,7 @@ class BitWise
         $split1 = self::splitNumber($number1);
         $split2 = self::splitNumber($number2);
 
-        return self::SPLIT_DIVISOR * ($split1[0] & $split2[0]) + ($split1[1] & $split2[1]);
+        return  self::SPLIT_DIVISOR * ($split1[0] & $split2[0]) + ($split1[1] & $split2[1]);
     }
 
     /**
@@ -62,18 +54,13 @@ class BitWise
      * Excel Function:
      *        BITOR(number1, number2)
      *
-     * @param null|array|bool|float|int|string $number1 Or can be an array of values
-     * @param null|array|bool|float|int|string $number2 Or can be an array of values
+     * @param int $number1
+     * @param int $number2
      *
-     * @return array|int|string If an array of numbers is passed as an argument, then the returned result will also be an array
-     *            with the same dimensions
+     * @return int|string
      */
-    public static function BITOR(null|array|bool|float|int|string $number1, null|array|bool|float|int|string $number2): array|string|int|float
+    public static function BITOR($number1, $number2)
     {
-        if (is_array($number1) || is_array($number2)) {
-            return self::evaluateArrayArguments([self::class, __FUNCTION__], $number1, $number2);
-        }
-
         try {
             $number1 = self::validateBitwiseArgument($number1);
             $number2 = self::validateBitwiseArgument($number2);
@@ -84,7 +71,7 @@ class BitWise
         $split1 = self::splitNumber($number1);
         $split2 = self::splitNumber($number2);
 
-        return self::SPLIT_DIVISOR * ($split1[0] | $split2[0]) + ($split1[1] | $split2[1]);
+        return  self::SPLIT_DIVISOR * ($split1[0] | $split2[0]) + ($split1[1] | $split2[1]);
     }
 
     /**
@@ -95,18 +82,13 @@ class BitWise
      * Excel Function:
      *        BITXOR(number1, number2)
      *
-     * @param null|array|bool|float|int|string $number1 Or can be an array of values
-     * @param null|array|bool|float|int|string $number2 Or can be an array of values
+     * @param int $number1
+     * @param int $number2
      *
-     * @return array|int|string If an array of numbers is passed as an argument, then the returned result will also be an array
-     *            with the same dimensions
+     * @return int|string
      */
-    public static function BITXOR(null|array|bool|float|int|string $number1, null|array|bool|float|int|string $number2): array|string|int|float
+    public static function BITXOR($number1, $number2)
     {
-        if (is_array($number1) || is_array($number2)) {
-            return self::evaluateArrayArguments([self::class, __FUNCTION__], $number1, $number2);
-        }
-
         try {
             $number1 = self::validateBitwiseArgument($number1);
             $number2 = self::validateBitwiseArgument($number2);
@@ -117,7 +99,7 @@ class BitWise
         $split1 = self::splitNumber($number1);
         $split2 = self::splitNumber($number2);
 
-        return self::SPLIT_DIVISOR * ($split1[0] ^ $split2[0]) + ($split1[1] ^ $split2[1]);
+        return  self::SPLIT_DIVISOR * ($split1[0] ^ $split2[0]) + ($split1[1] ^ $split2[1]);
     }
 
     /**
@@ -128,18 +110,13 @@ class BitWise
      * Excel Function:
      *        BITLSHIFT(number, shift_amount)
      *
-     * @param null|array|bool|float|int|string $number Or can be an array of values
-     * @param null|array|bool|float|int|string $shiftAmount Or can be an array of values
+     * @param int $number
+     * @param int $shiftAmount
      *
-     * @return array|float|string If an array of numbers is passed as an argument, then the returned result will also be an array
-     *            with the same dimensions
+     * @return float|int|string
      */
-    public static function BITLSHIFT(null|array|bool|float|int|string $number, null|array|bool|float|int|string $shiftAmount): array|string|float
+    public static function BITLSHIFT($number, $shiftAmount)
     {
-        if (is_array($number) || is_array($shiftAmount)) {
-            return self::evaluateArrayArguments([self::class, __FUNCTION__], $number, $shiftAmount);
-        }
-
         try {
             $number = self::validateBitwiseArgument($number);
             $shiftAmount = self::validateShiftAmount($shiftAmount);
@@ -149,7 +126,7 @@ class BitWise
 
         $result = floor($number * (2 ** $shiftAmount));
         if ($result > 2 ** 48 - 1) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         return $result;
@@ -163,18 +140,13 @@ class BitWise
      * Excel Function:
      *        BITRSHIFT(number, shift_amount)
      *
-     * @param null|array|bool|float|int|string $number Or can be an array of values
-     * @param null|array|bool|float|int|string $shiftAmount Or can be an array of values
+     * @param int $number
+     * @param int $shiftAmount
      *
-     * @return array|float|string If an array of numbers is passed as an argument, then the returned result will also be an array
-     *            with the same dimensions
+     * @return float|int|string
      */
-    public static function BITRSHIFT(null|array|bool|float|int|string $number, null|array|bool|float|int|string $shiftAmount): array|string|float
+    public static function BITRSHIFT($number, $shiftAmount)
     {
-        if (is_array($number) || is_array($shiftAmount)) {
-            return self::evaluateArrayArguments([self::class, __FUNCTION__], $number, $shiftAmount);
-        }
-
         try {
             $number = self::validateBitwiseArgument($number);
             $shiftAmount = self::validateShiftAmount($shiftAmount);
@@ -184,7 +156,7 @@ class BitWise
 
         $result = floor($number / (2 ** $shiftAmount));
         if ($result > 2 ** 48 - 1) { // possible because shiftAmount can be negative
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         return $result;
@@ -192,56 +164,64 @@ class BitWise
 
     /**
      * Validate arguments passed to the bitwise functions.
+     *
+     * @param mixed $value
+     *
+     * @return float|int
      */
-    private static function validateBitwiseArgument(mixed $value): float
+    private static function validateBitwiseArgument($value)
     {
-        $value = self::nullFalseTrueToNumber($value);
+        self::nullFalseTrueToNumber($value);
 
         if (is_numeric($value)) {
-            $value = (float) $value;
             if ($value == floor($value)) {
                 if (($value > 2 ** 48 - 1) || ($value < 0)) {
-                    throw new Exception(ExcelError::NAN());
+                    throw new Exception(Functions::NAN());
                 }
 
                 return floor($value);
             }
 
-            throw new Exception(ExcelError::NAN());
+            throw new Exception(Functions::NAN());
         }
 
-        throw new Exception(ExcelError::VALUE());
+        throw new Exception(Functions::VALUE());
     }
 
     /**
      * Validate arguments passed to the bitwise functions.
+     *
+     * @param mixed $value
+     *
+     * @return int
      */
-    private static function validateShiftAmount(mixed $value): int
+    private static function validateShiftAmount($value)
     {
-        $value = self::nullFalseTrueToNumber($value);
+        self::nullFalseTrueToNumber($value);
 
         if (is_numeric($value)) {
-            if (abs($value + 0) > 53) {
-                throw new Exception(ExcelError::NAN());
+            if (abs($value) > 53) {
+                throw new Exception(Functions::NAN());
             }
 
             return (int) $value;
         }
 
-        throw new Exception(ExcelError::VALUE());
+        throw new Exception(Functions::VALUE());
     }
 
     /**
      * Many functions accept null/false/true argument treated as 0/0/1.
+     *
+     * @param mixed $number
      */
-    private static function nullFalseTrueToNumber(mixed &$number): mixed
+    public static function nullFalseTrueToNumber(&$number): void
     {
+        $number = Functions::flattenSingleValue($number);
         if ($number === null) {
             $number = 0;
         } elseif (is_bool($number)) {
             $number = (int) $number;
         }
-
-        return $number;
     }
 }

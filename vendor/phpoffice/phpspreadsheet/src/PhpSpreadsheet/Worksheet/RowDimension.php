@@ -8,30 +8,36 @@ class RowDimension extends Dimension
 {
     /**
      * Row index.
+     *
+     * @var int
      */
-    private ?int $rowIndex;
+    private $rowIndex;
 
     /**
      * Row height (in pt).
      *
      * When this is set to a negative value, the row height should be ignored by IWriter
+     *
+     * @var float
      */
-    private float $height = -1;
+    private $height = -1;
 
     /**
      * ZeroHeight for Row?
+     *
+     * @var bool
      */
-    private bool $zeroHeight = false;
+    private $zeroHeight = false;
 
     /**
      * Create a new RowDimension.
      *
-     * @param ?int $index Numeric row index
+     * @param int $pIndex Numeric row index
      */
-    public function __construct(?int $index = 0)
+    public function __construct($pIndex = 0)
     {
         // Initialise values
-        $this->rowIndex = $index;
+        $this->rowIndex = $pIndex;
 
         // set dimension as unformatted by default
         parent::__construct(null);
@@ -40,7 +46,7 @@ class RowDimension extends Dimension
     /**
      * Get Row Index.
      */
-    public function getRowIndex(): ?int
+    public function getRowIndex(): int
     {
         return $this->rowIndex;
     }
@@ -50,7 +56,7 @@ class RowDimension extends Dimension
      *
      * @return $this
      */
-    public function setRowIndex(int $index): static
+    public function setRowIndex(int $index)
     {
         $this->rowIndex = $index;
 
@@ -59,11 +65,12 @@ class RowDimension extends Dimension
 
     /**
      * Get Row Height.
-     * By default, this will be in points; but this method also accepts an optional unit of measure
-     *    argument, and will convert the value from points to the specified UoM.
-     *    A value of -1 tells Excel to display this column in its default height.
+     * By default, this will be in points; but this method accepts a unit of measure
+     *    argument, and will convert the value to the specified UoM.
+     *
+     * @return float
      */
-    public function getRowHeight(?string $unitOfMeasure = null): float
+    public function getRowHeight(?string $unitOfMeasure = null)
     {
         return ($unitOfMeasure === null || $this->height < 0)
             ? $this->height
@@ -73,13 +80,13 @@ class RowDimension extends Dimension
     /**
      * Set Row Height.
      *
-     * @param float $height in points. A value of -1 tells Excel to display this column in its default height.
-     * By default, this will be the passed argument value; but this method also accepts an optional unit of measure
+     * @param float $height in points
+     * By default, this will be the passed argument value; but this method accepts a unit of measure
      *    argument, and will convert the passed argument value to points from the specified UoM
      *
      * @return $this
      */
-    public function setRowHeight(float $height, ?string $unitOfMeasure = null): static
+    public function setRowHeight($height, ?string $unitOfMeasure = null)
     {
         $this->height = ($unitOfMeasure === null || $height < 0)
             ? $height
@@ -101,9 +108,9 @@ class RowDimension extends Dimension
      *
      * @return $this
      */
-    public function setZeroHeight(bool $zeroHeight): static
+    public function setZeroHeight(bool $pValue)
     {
-        $this->zeroHeight = $zeroHeight;
+        $this->zeroHeight = $pValue;
 
         return $this;
     }

@@ -4,7 +4,6 @@ namespace PhpOffice\PhpSpreadsheet\Calculation\Financial\CashFlow;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
 
 class Single
 {
@@ -19,8 +18,10 @@ class Single
      *
      * @param mixed $principal the present value
      * @param float[] $schedule an array of interest rates to apply
+     *
+     * @return float|string
      */
-    public static function futureValue(mixed $principal, array $schedule): string|float
+    public static function futureValue($principal, $schedule)
     {
         $principal = Functions::flattenSingleValue($principal);
         $schedule = Functions::flattenArray($schedule);
@@ -50,7 +51,7 @@ class Single
      *
      * @return float|string Result, or a string containing an error
      */
-    public static function periods(mixed $rate, mixed $presentValue, mixed $futureValue): string|float
+    public static function periods($rate, $presentValue, $futureValue)
     {
         $rate = Functions::flattenSingleValue($rate);
         $presentValue = Functions::flattenSingleValue($presentValue);
@@ -66,7 +67,7 @@ class Single
 
         // Validate parameters
         if ($rate <= 0.0 || $presentValue <= 0.0 || $futureValue <= 0.0) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         return (log($futureValue) - log($presentValue)) / log(1 + $rate);
@@ -77,13 +78,13 @@ class Single
      *
      * Calculates the interest rate required for an investment to grow to a specified future value .
      *
-     * @param mixed $periods The number of periods over which the investment is made, expect array|float
-     * @param mixed $presentValue Present Value, expect array|float
-     * @param mixed $futureValue Future Value, expect array|float
+     * @param float $periods The number of periods over which the investment is made
+     * @param float $presentValue Present Value
+     * @param float $futureValue Future Value
      *
      * @return float|string Result, or a string containing an error
      */
-    public static function interestRate(mixed $periods = 0.0, mixed $presentValue = 0.0, mixed $futureValue = 0.0): string|float
+    public static function interestRate($periods = 0.0, $presentValue = 0.0, $futureValue = 0.0)
     {
         $periods = Functions::flattenSingleValue($periods);
         $presentValue = Functions::flattenSingleValue($presentValue);
@@ -99,7 +100,7 @@ class Single
 
         // Validate parameters
         if ($periods <= 0.0 || $presentValue <= 0.0 || $futureValue < 0.0) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         return ($futureValue / $presentValue) ** (1 / $periods) - 1;

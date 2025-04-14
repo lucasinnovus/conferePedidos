@@ -6,7 +6,6 @@ use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use PhpOffice\PhpSpreadsheet\Calculation\Financial\CashFlow\CashFlowValidations;
 use PhpOffice\PhpSpreadsheet\Calculation\Financial\Constants as FinancialConstants;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
 
 class Payments
 {
@@ -24,12 +23,12 @@ class Payments
      * @return float|string Result, or a string containing an error
      */
     public static function annuity(
-        mixed $interestRate,
-        mixed $numberOfPeriods,
-        mixed $presentValue,
-        mixed $futureValue = 0,
-        mixed $type = FinancialConstants::PAYMENT_END_OF_PERIOD
-    ): string|float {
+        $interestRate,
+        $numberOfPeriods,
+        $presentValue,
+        $futureValue = 0,
+        $type = FinancialConstants::PAYMENT_END_OF_PERIOD
+    ) {
         $interestRate = Functions::flattenSingleValue($interestRate);
         $numberOfPeriods = Functions::flattenSingleValue($numberOfPeriods);
         $presentValue = Functions::flattenSingleValue($presentValue);
@@ -48,8 +47,8 @@ class Payments
 
         // Calculate
         if ($interestRate != 0.0) {
-            return (-$futureValue - $presentValue * (1 + $interestRate) ** $numberOfPeriods)
-                / (1 + $interestRate * $type) / (((1 + $interestRate) ** $numberOfPeriods - 1) / $interestRate);
+            return (-$futureValue - $presentValue * (1 + $interestRate) ** $numberOfPeriods) /
+                (1 + $interestRate * $type) / (((1 + $interestRate) ** $numberOfPeriods - 1) / $interestRate);
         }
 
         return (-$presentValue - $futureValue) / $numberOfPeriods;
@@ -71,13 +70,13 @@ class Payments
      * @return float|string Result, or a string containing an error
      */
     public static function interestPayment(
-        mixed $interestRate,
-        mixed $period,
-        mixed $numberOfPeriods,
-        mixed $presentValue,
-        mixed $futureValue = 0,
-        mixed $type = FinancialConstants::PAYMENT_END_OF_PERIOD
-    ): string|float {
+        $interestRate,
+        $period,
+        $numberOfPeriods,
+        $presentValue,
+        $futureValue = 0,
+        $type = FinancialConstants::PAYMENT_END_OF_PERIOD
+    ) {
         $interestRate = Functions::flattenSingleValue($interestRate);
         $period = Functions::flattenSingleValue($period);
         $numberOfPeriods = Functions::flattenSingleValue($numberOfPeriods);
@@ -98,7 +97,7 @@ class Payments
 
         // Validate parameters
         if ($period <= 0 || $period > $numberOfPeriods) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         // Calculate

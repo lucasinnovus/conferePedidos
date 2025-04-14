@@ -2,20 +2,18 @@
 
 namespace PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 
-use Stringable;
-
 class BaseParserClass
 {
-    protected static function boolean(mixed $value): bool
+    protected static function boolean($value)
     {
         if (is_object($value)) {
-            $value = ($value instanceof Stringable) ? ((string) $value) : 'true';
+            $value = (string) $value;
         }
 
         if (is_numeric($value)) {
             return (bool) $value;
         }
 
-        return $value === 'true' || $value === 'TRUE';
+        return $value === strtolower('true');
     }
 }

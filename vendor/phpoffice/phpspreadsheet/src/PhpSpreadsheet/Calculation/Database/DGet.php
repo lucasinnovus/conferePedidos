@@ -2,7 +2,7 @@
 
 namespace PhpOffice\PhpSpreadsheet\Calculation\Database;
 
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
+use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 
 class DGet extends DatabaseAbstract
 {
@@ -19,7 +19,7 @@ class DGet extends DatabaseAbstract
      *                                        A database is a list of related data in which rows of related
      *                                        information are records, and columns of data are fields. The
      *                                        first row of the list contains labels for each column.
-     * @param null|array|int|string $field Indicates which column is used in the function. Enter the
+     * @param int|string $field Indicates which column is used in the function. Enter the
      *                                        column label enclosed between double quotation marks, such as
      *                                        "Age" or "Yield," or a number (without quotation marks) that
      *                                        represents the position of the column within the list: 1 for
@@ -29,17 +29,19 @@ class DGet extends DatabaseAbstract
      *                                        includes at least one column label and at least one cell below
      *                                        the column label in which you specify a condition for the
      *                                        column.
+     *
+     * @return mixed
      */
-    public static function evaluate(array $database, array|null|int|string $field, array $criteria): null|float|int|string
+    public static function evaluate($database, $field, $criteria)
     {
         $field = self::fieldExtract($database, $field);
         if ($field === null) {
-            return ExcelError::VALUE();
+            return null;
         }
 
         $columnData = self::getFilteredColumn($database, $field, $criteria);
         if (count($columnData) > 1) {
-            return ExcelError::NAN();
+            return Functions::NAN();
         }
 
         $row = array_pop($columnData);

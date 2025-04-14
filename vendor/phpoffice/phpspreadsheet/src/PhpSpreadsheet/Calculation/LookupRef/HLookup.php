@@ -2,16 +2,13 @@
 
 namespace PhpOffice\PhpSpreadsheet\Calculation\LookupRef;
 
-use PhpOffice\PhpSpreadsheet\Calculation\ArrayEnabled;
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
+use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
 
 class HLookup extends LookupBase
 {
-    use ArrayEnabled;
-
     /**
      * HLOOKUP
      * The HLOOKUP function searches for value in the top-most row of lookup_array and returns the value
@@ -25,17 +22,14 @@ class HLookup extends LookupBase
      *
      * @return mixed The value of the found cell
      */
-    public static function lookup(mixed $lookupValue, mixed $lookupArray, mixed $indexNumber, mixed $notExactMatch = true): mixed
+    public static function lookup($lookupValue, $lookupArray, $indexNumber, $notExactMatch = true)
     {
-        if (is_array($lookupValue) || is_array($indexNumber)) {
-            return self::evaluateArrayArgumentsIgnore([self::class, __FUNCTION__], 1, $lookupValue, $lookupArray, $indexNumber, $notExactMatch);
-        }
-
-        $notExactMatch = (bool) ($notExactMatch ?? true);
+        $lookupValue = Functions::flattenSingleValue($lookupValue);
+        $indexNumber = Functions::flattenSingleValue($indexNumber);
+        $notExactMatch = ($notExactMatch === null) ? true : Functions::flattenSingleValue($notExactMatch);
+        $lookupArray = self::convertLiteralArray($lookupArray);
 
         try {
-            self::validateLookupArray($lookupArray);
-            $lookupArray = self::convertLiteralArray($lookupArray);
             $indexNumber = self::validateIndexLookup($lookupArray, $indexNumber);
         } catch (Exception $e) {
             return $e->getMessage();
@@ -44,12 +38,12 @@ class HLookup extends LookupBase
         $f = array_keys($lookupArray);
         $firstRow = reset($f);
         if ((!is_array($lookupArray[$firstRow])) || ($indexNumber > count($lookupArray))) {
-            return ExcelError::REF();
+            return Functions::REF();
         }
 
         $firstkey = $f[0] - 1;
         $returnColumn = $firstkey + $indexNumber;
-        $firstColumn = array_shift($f) ?? 1;
+        $firstColumn = array_shift($f);
         $rowNumber = self::hLookupSearch($lookupValue, $lookupArray, $firstColumn, $notExactMatch);
 
         if ($rowNumber !== null) {
@@ -57,27 +51,28 @@ class HLookup extends LookupBase
             return $lookupArray[$returnColumn][Coordinate::stringFromColumnIndex($rowNumber)];
         }
 
-        return ExcelError::NA();
+        return Functions::NA();
     }
 
     /**
      * @param mixed $lookupValue The value that you want to match in lookup_array
-     * @param  int|string $column
+     * @param mixed $column The column to look up
+     * @param mixed $notExactMatch determines if you are looking for an exact match based on lookup_value
      */
-    private static function hLookupSearch(mixed $lookupValue, array $lookupArray, $column, bool $notExactMatch): ?int
+    private static function hLookupSearch($lookupValue, array $lookupArray, $column, $notExactMatch): ?int
     {
-        $lookupLower = StringHelper::strToLower((string) $lookupValue);
+        $lookupLower = StringHelper::strToLower($lookupValue);
 
         $rowNumber = null;
         foreach ($lookupArray[$column] as $rowKey => $rowData) {
             // break if we have passed possible keys
             $bothNumeric = is_numeric($lookupValue) && is_numeric($rowData);
             $bothNotNumeric = !is_numeric($lookupValue) && !is_numeric($rowData);
-            $cellDataLower = StringHelper::strToLower((string) $rowData);
+            $cellDataLower = StringHelper::strToLower($rowData);
 
             if (
-                $notExactMatch
-                && (($bothNumeric && $rowData > $lookupValue) || ($bothNotNumeric && $cellDataLower > $lookupLower))
+                $notExactMatch &&
+                (($bothNumeric && $rowData > $lookupValue) || ($bothNotNumeric && $cellDataLower > $lookupLower))
             ) {
                 break;
             }

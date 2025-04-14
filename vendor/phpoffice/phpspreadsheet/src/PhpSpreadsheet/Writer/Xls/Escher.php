@@ -3,7 +3,6 @@
 namespace PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use PhpOffice\PhpSpreadsheet\Shared\Escher as SharedEscher;
 use PhpOffice\PhpSpreadsheet\Shared\Escher\DgContainer;
 use PhpOffice\PhpSpreadsheet\Shared\Escher\DgContainer\SpgrContainer;
 use PhpOffice\PhpSpreadsheet\Shared\Escher\DgContainer\SpgrContainer\SpContainer;
@@ -17,41 +16,49 @@ class Escher
     /**
      * The object we are writing.
      */
-    private Blip|BSE|BstoreContainer|DgContainer|DggContainer|Escher|SpContainer|SpgrContainer|SharedEscher $object;
+    private $object;
 
     /**
      * The written binary data.
      */
-    private string $data;
+    private $data;
 
     /**
      * Shape offsets. Positions in binary stream where a new shape record begins.
+     *
+     * @var array
      */
-    private array $spOffsets;
+    private $spOffsets;
 
     /**
      * Shape types.
+     *
+     * @var array
      */
-    private array $spTypes;
+    private $spTypes;
 
     /**
      * Constructor.
+     *
+     * @param mixed $object
      */
-    public function __construct(Blip|BSE|BstoreContainer|DgContainer|DggContainer|self|SpContainer|SpgrContainer|SharedEscher $object)
+    public function __construct($object)
     {
         $this->object = $object;
     }
 
     /**
      * Process the object to be written.
+     *
+     * @return string
      */
-    public function close(): string
+    public function close()
     {
         // initialize
         $this->data = '';
 
-        switch ($this->object::class) {
-            case SharedEscher::class:
+        switch (get_class($this->object)) {
+            case \PhpOffice\PhpSpreadsheet\Shared\Escher::class:
                 if ($dggContainer = $this->object->getDggContainer()) {
                     $writer = new self($dggContainer);
                     $this->data = $writer->close();
@@ -78,8 +85,8 @@ class Escher
                 $recVerInstance |= $recInstance << 4;
 
                 // dgg data
-                $dggData
-                    = pack(
+                $dggData =
+                    pack(
                         'VVVV',
                         $this->object->getSpIdMax(), // maximum shape identifier increased by one
                         $this->object->getCDgSaved() + 1, // number of file identifier clusters increased by one
@@ -275,7 +282,7 @@ class Escher
                 $header = pack('vvV', $recVerInstance, $recType, $length);
 
                 // number of shapes in this drawing (including group shape)
-                $countShapes = count($this->object->getSpgrContainerOrThrow()->getChildren());
+                $countShapes = count($this->object->getSpgrContainer()->getChildren());
                 $innerData .= $header . pack('VV', $countShapes, $this->object->getLastSpId());
 
                 // write the spgrContainer
@@ -406,6 +413,8 @@ class Escher
 
                 // the client anchor
                 if ($this->object->getStartCoordinates()) {
+                    $clientAnchorData = '';
+
                     $recVer = 0x0;
                     $recInstance = 0x0;
                     $recType = 0xF010;
@@ -481,16 +490,20 @@ class Escher
 
     /**
      * Gets the shape offsets.
+     *
+     * @return array
      */
-    public function getSpOffsets(): array
+    public function getSpOffsets()
     {
         return $this->spOffsets;
     }
 
     /**
      * Gets the shape types.
+     *
+     * @return array
      */
-    public function getSpTypes(): array
+    public function getSpTypes()
     {
         return $this->spTypes;
     }

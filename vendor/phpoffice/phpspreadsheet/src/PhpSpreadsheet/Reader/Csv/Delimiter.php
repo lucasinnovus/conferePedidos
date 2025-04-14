@@ -9,15 +9,20 @@ class Delimiter
     /** @var resource */
     protected $fileHandle;
 
-    protected string $escapeCharacter;
+    /** @var string */
+    protected $escapeCharacter;
 
-    protected string $enclosure;
+    /** @var string */
+    protected $enclosure;
 
-    protected array $counts = [];
+    /** @var array */
+    protected $counts = [];
 
-    protected int $numberLines = 0;
+    /** @var int */
+    protected $numberLines = 0;
 
-    protected ?string $delimiter = null;
+    /** @var ?string */
+    protected $delimiter;
 
     /**
      * @param resource $fileHandle
@@ -55,12 +60,14 @@ class Delimiter
 
     protected function countDelimiterValues(string $line, array $delimiterKeys): void
     {
-        $splitString = mb_str_split($line, 1, 'UTF-8');
-        $distribution = array_count_values($splitString);
-        $countLine = array_intersect_key($distribution, $delimiterKeys);
+        $splitString = str_split($line, 1);
+        if (is_array($splitString)) {
+            $distribution = array_count_values($splitString);
+            $countLine = array_intersect_key($distribution, $delimiterKeys);
 
-        foreach (self::POTENTIAL_DELIMETERS as $delimiter) {
-            $this->counts[$delimiter][] = $countLine[$delimiter] ?? 0;
+            foreach (self::POTENTIAL_DELIMETERS as $delimiter) {
+                $this->counts[$delimiter][] = $countLine[$delimiter] ?? 0;
+            }
         }
     }
 
@@ -85,7 +92,9 @@ class Delimiter
 
             $meanSquareDeviations[$delimiter] = array_reduce(
                 $series,
-                fn ($sum, $value): int|float => $sum + ($value - $median) ** 2
+                function ($sum, $value) use ($median) {
+                    return $sum + ($value - $median) ** 2;
+                }
             ) / count($series);
         }
 
@@ -131,12 +140,12 @@ class Delimiter
             $line = $line . $newLine;
 
             // Drop everything that is enclosed to avoid counting false positives in enclosures
-            $line = (string) preg_replace('/(' . $enclosure . '.*' . $enclosure . ')/Us', '', $line);
+            $line = preg_replace('/(' . $enclosure . '.*' . $enclosure . ')/Us', '', $line);
 
             // See if we have any enclosures left in the line
             // if we still have an enclosure then we need to read the next line as well
-        } while (preg_match('/(' . $enclosure . ')/', $line) > 0);
+        } while (preg_match('/(' . $enclosure . ')/', $line ?? '') > 0);
 
-        return ($line !== '') ? $line : false;
+        return $line ?? false;
     }
 }

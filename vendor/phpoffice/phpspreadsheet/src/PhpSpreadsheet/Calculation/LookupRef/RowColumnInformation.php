@@ -3,7 +3,7 @@
 namespace PhpOffice\PhpSpreadsheet\Calculation\LookupRef;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
+use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 use PhpOffice\PhpSpreadsheet\Cell\Cell;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
@@ -20,9 +20,9 @@ class RowColumnInformation
         return $cellAddress === null || (!is_array($cellAddress) && trim($cellAddress) === '');
     }
 
-    private static function cellColumn(?Cell $cell): int
+    private static function cellColumn(?Cell $pCell): int
     {
-        return ($cell !== null) ? Coordinate::columnIndexFromString($cell->getColumn()) : 1;
+        return ($pCell !== null) ? (int) Coordinate::columnIndexFromString($pCell->getColumn()) : 1;
     }
 
     /**
@@ -42,44 +42,42 @@ class RowColumnInformation
      *
      * @return int|int[]
      */
-    public static function COLUMN($cellAddress = null, ?Cell $cell = null): int|array
+    public static function COLUMN($cellAddress = null, ?Cell $pCell = null)
     {
         if (self::cellAddressNullOrWhitespace($cellAddress)) {
-            return self::cellColumn($cell);
+            return self::cellColumn($pCell);
         }
 
         if (is_array($cellAddress)) {
             foreach ($cellAddress as $columnKey => $value) {
-                $columnKey = (string) preg_replace('/[^a-z]/i', '', $columnKey);
+                $columnKey = preg_replace('/[^a-z]/i', '', $columnKey);
 
-                return Coordinate::columnIndexFromString($columnKey);
+                return (int) Coordinate::columnIndexFromString($columnKey);
             }
 
-            return self::cellColumn($cell);
+            return self::cellColumn($pCell);
         }
 
         $cellAddress = $cellAddress ?? '';
-        if ($cell != null) {
-            [,, $sheetName] = Helpers::extractWorksheet($cellAddress, $cell);
-            [,, $cellAddress] = Helpers::extractCellAddresses($cellAddress, true, $cell->getWorksheet(), $sheetName);
+        if ($pCell != null) {
+            [,, $sheetName] = Helpers::extractWorksheet($cellAddress, $pCell);
+            [,, $cellAddress] = Helpers::extractCellAddresses($cellAddress, true, $pCell->getWorksheet(), $sheetName);
         }
         [, $cellAddress] = Worksheet::extractSheetTitle($cellAddress, true);
-        $cellAddress ??= '';
-
-        if (str_contains($cellAddress, ':')) {
+        if (strpos($cellAddress, ':') !== false) {
             [$startAddress, $endAddress] = explode(':', $cellAddress);
-            $startAddress = (string) preg_replace('/[^a-z]/i', '', $startAddress);
-            $endAddress = (string) preg_replace('/[^a-z]/i', '', $endAddress);
+            $startAddress = preg_replace('/[^a-z]/i', '', $startAddress);
+            $endAddress = preg_replace('/[^a-z]/i', '', $endAddress);
 
             return range(
-                Coordinate::columnIndexFromString($startAddress),
-                Coordinate::columnIndexFromString($endAddress)
+                (int) Coordinate::columnIndexFromString($startAddress),
+                (int) Coordinate::columnIndexFromString($endAddress)
             );
         }
 
-        $cellAddress = (string) preg_replace('/[^a-z]/i', '', $cellAddress);
+        $cellAddress = preg_replace('/[^a-z]/i', '', $cellAddress);
 
-        return Coordinate::columnIndexFromString($cellAddress);
+        return (int) Coordinate::columnIndexFromString($cellAddress);
     }
 
     /**
@@ -101,7 +99,7 @@ class RowColumnInformation
             return 1;
         }
         if (!is_array($cellAddress)) {
-            return ExcelError::VALUE();
+            return Functions::VALUE();
         }
 
         reset($cellAddress);
@@ -115,9 +113,9 @@ class RowColumnInformation
         return $columns;
     }
 
-    private static function cellRow(?Cell $cell): int
+    private static function cellRow(?Cell $pCell): int
     {
-        return ($cell !== null) ? $cell->getRow() : 1;
+        return ($pCell !== null) ? $pCell->getRow() : 1;
     }
 
     /**
@@ -135,12 +133,12 @@ class RowColumnInformation
      *
      * @param null|array|string $cellAddress A reference to a range of cells for which you want the row numbers
      *
-     * @return int|mixed[]
+     * @return int|mixed[]|string
      */
-    public static function ROW($cellAddress = null, ?Cell $cell = null): int|array
+    public static function ROW($cellAddress = null, ?Cell $pCell = null)
     {
         if (self::cellAddressNullOrWhitespace($cellAddress)) {
-            return self::cellRow($cell);
+            return self::cellRow($pCell);
         }
 
         if (is_array($cellAddress)) {
@@ -150,23 +148,24 @@ class RowColumnInformation
                 }
             }
 
-            return self::cellRow($cell);
+            return self::cellRow($pCell);
         }
 
         $cellAddress = $cellAddress ?? '';
-        if ($cell !== null) {
-            [,, $sheetName] = Helpers::extractWorksheet($cellAddress, $cell);
-            [,, $cellAddress] = Helpers::extractCellAddresses($cellAddress, true, $cell->getWorksheet(), $sheetName);
+        if ($pCell !== null) {
+            [,, $sheetName] = Helpers::extractWorksheet($cellAddress, $pCell);
+            [,, $cellAddress] = Helpers::extractCellAddresses($cellAddress, true, $pCell->getWorksheet(), $sheetName);
         }
         [, $cellAddress] = Worksheet::extractSheetTitle($cellAddress, true);
-        $cellAddress ??= '';
-        if (str_contains($cellAddress, ':')) {
+        if (strpos($cellAddress, ':') !== false) {
             [$startAddress, $endAddress] = explode(':', $cellAddress);
-            $startAddress = (int) (string) preg_replace('/\D/', '', $startAddress);
-            $endAddress = (int) (string) preg_replace('/\D/', '', $endAddress);
+            $startAddress = preg_replace('/\D/', '', $startAddress);
+            $endAddress = preg_replace('/\D/', '', $endAddress);
 
             return array_map(
-                fn ($value): array => [$value],
+                function ($value) {
+                    return [$value];
+                },
                 range($startAddress, $endAddress)
             );
         }
@@ -194,7 +193,7 @@ class RowColumnInformation
             return 1;
         }
         if (!is_array($cellAddress)) {
-            return ExcelError::VALUE();
+            return Functions::VALUE();
         }
 
         reset($cellAddress);

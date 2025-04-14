@@ -2,15 +2,12 @@
 
 namespace PhpOffice\PhpSpreadsheet\Calculation\DateTimeExcel;
 
-use PhpOffice\PhpSpreadsheet\Calculation\ArrayEnabled;
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 use PhpOffice\PhpSpreadsheet\Shared\Date as SharedDateHelper;
 
 class DateParts
 {
-    use ArrayEnabled;
-
     /**
      * DAYOFMONTH.
      *
@@ -22,18 +19,11 @@ class DateParts
      *
      * @param mixed $dateValue Excel date serial value (float), PHP date timestamp (integer),
      *                                    PHP DateTime object, or a standard date string
-     *                         Or can be an array of date values
      *
-     * @return array|int|string Day of the month
-     *         If an array of numbers is passed as the argument, then the returned result will also be an array
-     *            with the same dimensions
+     * @return int|string Day of the month
      */
-    public static function day(mixed $dateValue): array|int|string
+    public static function day($dateValue)
     {
-        if (is_array($dateValue)) {
-            return self::evaluateSingleArgumentArray([self::class, __FUNCTION__], $dateValue);
-        }
-
         $weirdResult = self::weirdCondition($dateValue);
         if ($weirdResult >= 0) {
             return $weirdResult;
@@ -47,7 +37,6 @@ class DateParts
 
         // Execute function
         $PHPDateObject = SharedDateHelper::excelToDateTimeObject($dateValue);
-        SharedDateHelper::roundMicroseconds($PHPDateObject);
 
         return (int) $PHPDateObject->format('j');
     }
@@ -63,18 +52,11 @@ class DateParts
      *
      * @param mixed $dateValue Excel date serial value (float), PHP date timestamp (integer),
      *                                    PHP DateTime object, or a standard date string
-     *                         Or can be an array of date values
      *
-     * @return array|int|string Month of the year
-     *         If an array of numbers is passed as the argument, then the returned result will also be an array
-     *            with the same dimensions
+     * @return int|string Month of the year
      */
-    public static function month(mixed $dateValue): array|string|int
+    public static function month($dateValue)
     {
-        if (is_array($dateValue)) {
-            return self::evaluateSingleArgumentArray([self::class, __FUNCTION__], $dateValue);
-        }
-
         try {
             $dateValue = Helpers::getDateValue($dateValue);
         } catch (Exception $e) {
@@ -86,7 +68,6 @@ class DateParts
 
         // Execute function
         $PHPDateObject = SharedDateHelper::excelToDateTimeObject($dateValue);
-        SharedDateHelper::roundMicroseconds($PHPDateObject);
 
         return (int) $PHPDateObject->format('n');
     }
@@ -102,18 +83,11 @@ class DateParts
      *
      * @param mixed $dateValue Excel date serial value (float), PHP date timestamp (integer),
      *                                    PHP DateTime object, or a standard date string
-     *                         Or can be an array of date values
      *
-     * @return array|int|string Year
-     *         If an array of numbers is passed as the argument, then the returned result will also be an array
-     *            with the same dimensions
+     * @return int|string Year
      */
-    public static function year(mixed $dateValue): array|string|int
+    public static function year($dateValue)
     {
-        if (is_array($dateValue)) {
-            return self::evaluateSingleArgumentArray([self::class, __FUNCTION__], $dateValue);
-        }
-
         try {
             $dateValue = Helpers::getDateValue($dateValue);
         } catch (Exception $e) {
@@ -125,7 +99,6 @@ class DateParts
         }
         // Execute function
         $PHPDateObject = SharedDateHelper::excelToDateTimeObject($dateValue);
-        SharedDateHelper::roundMicroseconds($PHPDateObject);
 
         return (int) $PHPDateObject->format('Y');
     }
@@ -134,7 +107,7 @@ class DateParts
      * @param mixed $dateValue Excel date serial value (float), PHP date timestamp (integer),
      *                                    PHP DateTime object, or a standard date string
      */
-    private static function weirdCondition(mixed $dateValue): int
+    private static function weirdCondition($dateValue): int
     {
         // Excel does not treat 0 consistently for DAY vs. (MONTH or YEAR)
         if (SharedDateHelper::getExcelCalendar() === SharedDateHelper::CALENDAR_WINDOWS_1900 && Functions::getCompatibilityMode() == Functions::COMPATIBILITY_EXCEL) {

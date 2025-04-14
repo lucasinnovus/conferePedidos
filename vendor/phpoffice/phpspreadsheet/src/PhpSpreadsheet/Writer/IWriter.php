@@ -8,8 +8,6 @@ interface IWriter
 {
     public const SAVE_WITH_CHARTS = 1;
 
-    public const DISABLE_PRECALCULATE_FORMULAE = 2;
-
     /**
      * IWriter constructor.
      *
@@ -21,17 +19,21 @@ interface IWriter
      * Write charts in workbook?
      *        If this is true, then the Writer will write definitions for any charts that exist in the PhpSpreadsheet object.
      *        If false (the default) it will ignore any charts defined in the PhpSpreadsheet object.
+     *
+     * @return bool
      */
-    public function getIncludeCharts(): bool;
+    public function getIncludeCharts();
 
     /**
      * Set write charts in workbook
      *        Set to true, to advise the Writer to include any charts that exist in the PhpSpreadsheet object.
      *        Set to false (the default) to ignore charts.
      *
-     * @return $this
+     * @param bool $includeCharts
+     *
+     * @return IWriter
      */
-    public function setIncludeCharts(bool $includeCharts): self;
+    public function setIncludeCharts($includeCharts);
 
     /**
      * Get Pre-Calculate Formulas flag
@@ -40,8 +42,10 @@ interface IWriter
      *        viewer when opening the file
      *     If false, then formulae are not calculated on save. This is faster for saving in PhpSpreadsheet, but slower
      *        when opening the resulting file in MS Excel, because Excel has to recalculate the formulae itself.
+     *
+     * @return bool
      */
-    public function getPreCalculateFormulas(): bool;
+    public function getPreCalculateFormulas();
 
     /**
      * Set Pre-Calculate Formulas
@@ -50,38 +54,38 @@ interface IWriter
      *
      * @param bool $precalculateFormulas Pre-Calculate Formulas?
      *
-     * @return $this
+     * @return IWriter
      */
-    public function setPreCalculateFormulas(bool $precalculateFormulas): self;
+    public function setPreCalculateFormulas($precalculateFormulas);
 
     /**
      * Save PhpSpreadsheet to file.
      *
      * @param resource|string $filename Name of the file to save
-     * @param int $flags Flags that can change the behaviour of the Writer:
-     *            self::SAVE_WITH_CHARTS                Save any charts that are defined (if the Writer supports Charts)
-     *            self::DISABLE_PRECALCULATE_FORMULAE   Don't Precalculate formulae before saving the file
-     *
-     * @throws Exception
      */
     public function save($filename, int $flags = 0): void;
 
     /**
      * Get use disk caching where possible?
+     *
+     * @return bool
      */
-    public function getUseDiskCaching(): bool;
+    public function getUseDiskCaching();
 
     /**
      * Set use disk caching where possible?
      *
-     * @param ?string $cacheDirectory Disk caching directory
+     * @param bool $useDiskCache
+     * @param string $cacheDirectory Disk caching directory
      *
-     * @return $this
+     * @return IWriter
      */
-    public function setUseDiskCaching(bool $useDiskCache, ?string $cacheDirectory = null): self;
+    public function setUseDiskCaching($useDiskCache, $cacheDirectory = null);
 
     /**
      * Get disk caching directory.
+     *
+     * @return string
      */
-    public function getDiskCachingDirectory(): string;
+    public function getDiskCachingDirectory();
 }

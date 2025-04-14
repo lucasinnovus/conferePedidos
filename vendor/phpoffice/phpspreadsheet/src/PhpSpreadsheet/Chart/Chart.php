@@ -9,126 +9,145 @@ class Chart
 {
     /**
      * Chart Name.
+     *
+     * @var string
      */
-    private string $name;
+    private $name = '';
 
     /**
      * Worksheet.
+     *
+     * @var Worksheet
      */
-    private ?Worksheet $worksheet = null;
+    private $worksheet;
 
     /**
      * Chart Title.
+     *
+     * @var Title
      */
-    private ?Title $title;
+    private $title;
 
     /**
      * Chart Legend.
+     *
+     * @var Legend
      */
-    private ?Legend $legend;
+    private $legend;
 
     /**
      * X-Axis Label.
+     *
+     * @var Title
      */
-    private ?Title $xAxisLabel;
+    private $xAxisLabel;
 
     /**
      * Y-Axis Label.
+     *
+     * @var Title
      */
-    private ?Title $yAxisLabel;
+    private $yAxisLabel;
 
     /**
      * Chart Plot Area.
+     *
+     * @var PlotArea
      */
-    private ?PlotArea $plotArea;
+    private $plotArea;
 
     /**
      * Plot Visible Only.
+     *
+     * @var bool
      */
-    private bool $plotVisibleOnly;
+    private $plotVisibleOnly = true;
 
     /**
      * Display Blanks as.
+     *
+     * @var string
      */
-    private string $displayBlanksAs;
+    private $displayBlanksAs = DataSeries::EMPTY_AS_GAP;
 
     /**
      * Chart Asix Y as.
+     *
+     * @var Axis
      */
-    private Axis $yAxis;
+    private $yAxis;
 
     /**
      * Chart Asix X as.
+     *
+     * @var Axis
      */
-    private Axis $xAxis;
+    private $xAxis;
+
+    /**
+     * Chart Major Gridlines as.
+     *
+     * @var GridLines
+     */
+    private $majorGridlines;
+
+    /**
+     * Chart Minor Gridlines as.
+     *
+     * @var GridLines
+     */
+    private $minorGridlines;
 
     /**
      * Top-Left Cell Position.
+     *
+     * @var string
      */
-    private string $topLeftCellRef = 'A1';
+    private $topLeftCellRef = 'A1';
 
     /**
      * Top-Left X-Offset.
+     *
+     * @var int
      */
-    private int $topLeftXOffset = 0;
+    private $topLeftXOffset = 0;
 
     /**
      * Top-Left Y-Offset.
+     *
+     * @var int
      */
-    private int $topLeftYOffset = 0;
+    private $topLeftYOffset = 0;
 
     /**
      * Bottom-Right Cell Position.
+     *
+     * @var string
      */
-    private string $bottomRightCellRef = '';
+    private $bottomRightCellRef = 'A1';
 
     /**
      * Bottom-Right X-Offset.
+     *
+     * @var int
      */
-    private int $bottomRightXOffset = 10;
+    private $bottomRightXOffset = 10;
 
     /**
      * Bottom-Right Y-Offset.
+     *
+     * @var int
      */
-    private int $bottomRightYOffset = 10;
-
-    private ?int $rotX = null;
-
-    private ?int $rotY = null;
-
-    private ?int $rAngAx = null;
-
-    private ?int $perspective = null;
-
-    private bool $oneCellAnchor = false;
-
-    private bool $autoTitleDeleted = false;
-
-    private bool $noFill = false;
-
-    private bool $noBorder = false;
-
-    private bool $roundedCorners = false;
-
-    private GridLines $borderLines;
-
-    private ChartColor $fillColor;
-
-    /**
-     * Rendered width in pixels.
-     */
-    private ?float $renderedWidth = null;
-
-    /**
-     * Rendered height in pixels.
-     */
-    private ?float $renderedHeight = null;
+    private $bottomRightYOffset = 10;
 
     /**
      * Create a new Chart.
-     * majorGridlines and minorGridlines are deprecated, moved to Axis.
+     *
+     * @param mixed $name
+     * @param mixed $plotVisibleOnly
+     * @param string $displayBlanksAs
      */
-    public function __construct(string $name, ?Title $title = null, ?Legend $legend = null, ?PlotArea $plotArea = null, bool $plotVisibleOnly = true, string $displayBlanksAs = DataSeries::EMPTY_AS_GAP, ?Title $xAxisLabel = null, ?Title $yAxisLabel = null, ?Axis $xAxis = null, ?Axis $yAxis = null, ?GridLines $majorGridlines = null, ?GridLines $minorGridlines = null)
+    public function __construct($name, ?Title $title = null, ?Legend $legend = null, ?PlotArea $plotArea = null, $plotVisibleOnly = true, $displayBlanksAs = DataSeries::EMPTY_AS_GAP, ?Title $xAxisLabel = null, ?Title $yAxisLabel = null, ?Axis $xAxis = null, ?Axis $yAxis = null, ?GridLines $majorGridlines = null, ?GridLines $minorGridlines = null)
     {
         $this->name = $name;
         $this->title = $title;
@@ -138,42 +157,28 @@ class Chart
         $this->plotArea = $plotArea;
         $this->plotVisibleOnly = $plotVisibleOnly;
         $this->displayBlanksAs = $displayBlanksAs;
-        $this->xAxis = $xAxis ?? new Axis();
-        $this->yAxis = $yAxis ?? new Axis();
-        if ($majorGridlines !== null) {
-            $this->yAxis->setMajorGridlines($majorGridlines);
-        }
-        if ($minorGridlines !== null) {
-            $this->yAxis->setMinorGridlines($minorGridlines);
-        }
-        $this->fillColor = new ChartColor();
-        $this->borderLines = new GridLines();
-    }
-
-    public function __destruct()
-    {
-        $this->worksheet = null;
+        $this->xAxis = $xAxis;
+        $this->yAxis = $yAxis;
+        $this->majorGridlines = $majorGridlines;
+        $this->minorGridlines = $minorGridlines;
     }
 
     /**
      * Get Name.
+     *
+     * @return string
      */
-    public function getName(): string
+    public function getName()
     {
         return $this->name;
     }
 
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
     /**
      * Get Worksheet.
+     *
+     * @return Worksheet
      */
-    public function getWorksheet(): ?Worksheet
+    public function getWorksheet()
     {
         return $this->worksheet;
     }
@@ -181,16 +186,23 @@ class Chart
     /**
      * Set Worksheet.
      *
+     * @param Worksheet $worksheet
+     *
      * @return $this
      */
-    public function setWorksheet(?Worksheet $worksheet = null): static
+    public function setWorksheet(?Worksheet $worksheet = null)
     {
         $this->worksheet = $worksheet;
 
         return $this;
     }
 
-    public function getTitle(): ?Title
+    /**
+     * Get Title.
+     *
+     * @return Title
+     */
+    public function getTitle()
     {
         return $this->title;
     }
@@ -200,14 +212,19 @@ class Chart
      *
      * @return $this
      */
-    public function setTitle(Title $title): static
+    public function setTitle(Title $title)
     {
         $this->title = $title;
 
         return $this;
     }
 
-    public function getLegend(): ?Legend
+    /**
+     * Get Legend.
+     *
+     * @return Legend
+     */
+    public function getLegend()
     {
         return $this->legend;
     }
@@ -217,14 +234,19 @@ class Chart
      *
      * @return $this
      */
-    public function setLegend(Legend $legend): static
+    public function setLegend(Legend $legend)
     {
         $this->legend = $legend;
 
         return $this;
     }
 
-    public function getXAxisLabel(): ?Title
+    /**
+     * Get X-Axis Label.
+     *
+     * @return Title
+     */
+    public function getXAxisLabel()
     {
         return $this->xAxisLabel;
     }
@@ -234,14 +256,19 @@ class Chart
      *
      * @return $this
      */
-    public function setXAxisLabel(Title $label): static
+    public function setXAxisLabel(Title $label)
     {
         $this->xAxisLabel = $label;
 
         return $this;
     }
 
-    public function getYAxisLabel(): ?Title
+    /**
+     * Get Y-Axis Label.
+     *
+     * @return Title
+     */
+    public function getYAxisLabel()
     {
         return $this->yAxisLabel;
     }
@@ -251,42 +278,29 @@ class Chart
      *
      * @return $this
      */
-    public function setYAxisLabel(Title $label): static
+    public function setYAxisLabel(Title $label)
     {
         $this->yAxisLabel = $label;
 
         return $this;
     }
 
-    public function getPlotArea(): ?PlotArea
+    /**
+     * Get Plot Area.
+     *
+     * @return PlotArea
+     */
+    public function getPlotArea()
     {
         return $this->plotArea;
     }
 
-    public function getPlotAreaOrThrow(): PlotArea
-    {
-        $plotArea = $this->getPlotArea();
-        if ($plotArea !== null) {
-            return $plotArea;
-        }
-
-        throw new Exception('Chart has no PlotArea');
-    }
-
-    /**
-     * Set Plot Area.
-     */
-    public function setPlotArea(PlotArea $plotArea): self
-    {
-        $this->plotArea = $plotArea;
-
-        return $this;
-    }
-
     /**
      * Get Plot Visible Only.
+     *
+     * @return bool
      */
-    public function getPlotVisibleOnly(): bool
+    public function getPlotVisibleOnly()
     {
         return $this->plotVisibleOnly;
     }
@@ -294,9 +308,11 @@ class Chart
     /**
      * Set Plot Visible Only.
      *
+     * @param bool $plotVisibleOnly
+     *
      * @return $this
      */
-    public function setPlotVisibleOnly(bool $plotVisibleOnly): static
+    public function setPlotVisibleOnly($plotVisibleOnly)
     {
         $this->plotVisibleOnly = $plotVisibleOnly;
 
@@ -305,8 +321,10 @@ class Chart
 
     /**
      * Get Display Blanks as.
+     *
+     * @return string
      */
-    public function getDisplayBlanksAs(): string
+    public function getDisplayBlanksAs()
     {
         return $this->displayBlanksAs;
     }
@@ -314,53 +332,85 @@ class Chart
     /**
      * Set Display Blanks as.
      *
+     * @param string $displayBlanksAs
+     *
      * @return $this
      */
-    public function setDisplayBlanksAs(string $displayBlanksAs): static
+    public function setDisplayBlanksAs($displayBlanksAs)
     {
         $this->displayBlanksAs = $displayBlanksAs;
 
         return $this;
     }
 
-    public function getChartAxisY(): Axis
+    /**
+     * Get yAxis.
+     *
+     * @return Axis
+     */
+    public function getChartAxisY()
     {
-        return $this->yAxis;
+        if ($this->yAxis !== null) {
+            return $this->yAxis;
+        }
+
+        return new Axis();
     }
 
     /**
-     * Set yAxis.
+     * Get xAxis.
+     *
+     * @return Axis
      */
-    public function setChartAxisY(?Axis $axis): self
+    public function getChartAxisX()
     {
-        $this->yAxis = $axis ?? new Axis();
+        if ($this->xAxis !== null) {
+            return $this->xAxis;
+        }
 
-        return $this;
-    }
-
-    public function getChartAxisX(): Axis
-    {
-        return $this->xAxis;
+        return new Axis();
     }
 
     /**
-     * Set xAxis.
+     * Get Major Gridlines.
+     *
+     * @return GridLines
      */
-    public function setChartAxisX(?Axis $axis): self
+    public function getMajorGridlines()
     {
-        $this->xAxis = $axis ?? new Axis();
+        if ($this->majorGridlines !== null) {
+            return $this->majorGridlines;
+        }
 
-        return $this;
+        return new GridLines();
+    }
+
+    /**
+     * Get Minor Gridlines.
+     *
+     * @return GridLines
+     */
+    public function getMinorGridlines()
+    {
+        if ($this->minorGridlines !== null) {
+            return $this->minorGridlines;
+        }
+
+        return new GridLines();
     }
 
     /**
      * Set the Top Left position for the chart.
      *
+     * @param string $cell
+     * @param int $xOffset
+     * @param int $yOffset
+     *
      * @return $this
      */
-    public function setTopLeftPosition(string $cellAddress, ?int $xOffset = null, ?int $yOffset = null): static
+    public function setTopLeftPosition($cell, $xOffset = null, $yOffset = null)
     {
-        $this->topLeftCellRef = $cellAddress;
+        $this->topLeftCellRef = $cell;
         if ($xOffset !== null) {
             $this->setTopLeftXOffset($xOffset);
         }
@@ -374,11 +424,9 @@ class Chart
     /**
      * Get the top left position of the chart.
      *
-     * Returns ['cell' => string cell address, 'xOffset' => int, 'yOffset' => int].
-     *
      * @return array{cell: string, xOffset: int, yOffset: int} an associative array containing the cell address, X-Offset and Y-Offset from the top left of that cell
      */
-    public function getTopLeftPosition(): array
+    public function getTopLeftPosition()
     {
         return [
             'cell' => $this->topLeftCellRef,
@@ -389,8 +437,10 @@ class Chart
 
     /**
      * Get the cell address where the top left of the chart is fixed.
+     *
+     * @return string
      */
-    public function getTopLeftCell(): string
+    public function getTopLeftCell()
     {
         return $this->topLeftCellRef;
     }
@@ -398,11 +448,13 @@ class Chart
     /**
      * Set the Top Left cell position for the chart.
      *
+     * @param string $cell
+     *
      * @return $this
      */
-    public function setTopLeftCell(string $cellAddress): static
+    public function setTopLeftCell($cell)
     {
-        $this->topLeftCellRef = $cellAddress;
+        $this->topLeftCellRef = $cell;
 
         return $this;
     }
@@ -410,9 +462,12 @@ class Chart
     /**
      * Set the offset position within the Top Left cell for the chart.
      *
+     * @param int $xOffset
+     * @param int $yOffset
+     *
      * @return $this
      */
-    public function setTopLeftOffset(?int $xOffset, ?int $yOffset): static
+    public function setTopLeftOffset($xOffset, $yOffset)
     {
         if ($xOffset !== null) {
             $this->setTopLeftXOffset($xOffset);
@@ -430,7 +485,7 @@ class Chart
      *
      * @return int[]
      */
-    public function getTopLeftOffset(): array
+    public function getTopLeftOffset()
     {
         return [
             'X' => $this->topLeftXOffset,
@@ -438,32 +493,26 @@ class Chart
         ];
     }
 
-    /**
-     * @return $this
-     */
-    public function setTopLeftXOffset(int $xOffset): static
+    public function setTopLeftXOffset($xOffset)
     {
         $this->topLeftXOffset = $xOffset;
 
         return $this;
     }
 
-    public function getTopLeftXOffset(): int
+    public function getTopLeftXOffset()
     {
         return $this->topLeftXOffset;
     }
 
-    /**
-     * @return $this
-     */
-    public function setTopLeftYOffset(int $yOffset): static
+    public function setTopLeftYOffset($yOffset)
     {
         $this->topLeftYOffset = $yOffset;
 
         return $this;
     }
 
-    public function getTopLeftYOffset(): int
+    public function getTopLeftYOffset()
     {
         return $this->topLeftYOffset;
     }
@@ -471,11 +520,15 @@ class Chart
     /**
      * Set the Bottom Right position of the chart.
      *
+     * @param string $cell
+     * @param int $xOffset
+     * @param int $yOffset
+     *
      * @return $this
      */
-    public function setBottomRightPosition(string $cellAddress = '', ?int $xOffset = null, ?int $yOffset = null): static
+    public function setBottomRightPosition($cell, $xOffset = null, $yOffset = null)
     {
-        $this->bottomRightCellRef = $cellAddress;
+        $this->bottomRightCellRef = $cell;
         if ($xOffset !== null) {
             $this->setBottomRightXOffset($xOffset);
         }
@@ -491,7 +544,7 @@ class Chart
      *
      * @return array an associative array containing the cell address, X-Offset and Y-Offset from the top left of that cell
      */
-    public function getBottomRightPosition(): array
+    public function getBottomRightPosition()
     {
         return [
             'cell' => $this->bottomRightCellRef,
@@ -500,22 +553,19 @@ class Chart
         ];
     }
 
-    /**
-     * Set the Bottom Right cell for the chart.
-     *
-     * @return $this
-     */
-    public function setBottomRightCell(string $cellAddress = ''): static
+    public function setBottomRightCell($cell)
     {
-        $this->bottomRightCellRef = $cellAddress;
+        $this->bottomRightCellRef = $cell;
 
         return $this;
     }
 
     /**
      * Get the cell address where the bottom right of the chart is fixed.
+     *
+     * @return string
      */
-    public function getBottomRightCell(): string
+    public function getBottomRightCell()
     {
         return $this->bottomRightCellRef;
     }
@@ -523,9 +573,12 @@ class Chart
     /**
      * Set the offset position within the Bottom Right cell for the chart.
      *
+     * @param int $xOffset
+     * @param int $yOffset
+     *
      * @return $this
      */
-    public function setBottomRightOffset(?int $xOffset, ?int $yOffset): static
+    public function setBottomRightOffset($xOffset, $yOffset)
     {
         if ($xOffset !== null) {
             $this->setBottomRightXOffset($xOffset);
@@ -543,7 +596,7 @@ class Chart
      *
      * @return int[]
      */
-    public function getBottomRightOffset(): array
+    public function getBottomRightOffset()
     {
         return [
             'X' => $this->bottomRightXOffset,
@@ -551,39 +604,33 @@ class Chart
         ];
     }
 
-    /**
-     * @return $this
-     */
-    public function setBottomRightXOffset(int $xOffset): static
+    public function setBottomRightXOffset($xOffset)
     {
         $this->bottomRightXOffset = $xOffset;
 
         return $this;
     }
 
-    public function getBottomRightXOffset(): int
+    public function getBottomRightXOffset()
     {
         return $this->bottomRightXOffset;
     }
 
-    /**
-     * @return $this
-     */
-    public function setBottomRightYOffset(int $yOffset): static
+    public function setBottomRightYOffset($yOffset)
     {
         $this->bottomRightYOffset = $yOffset;
 
         return $this;
     }
 
-    public function getBottomRightYOffset(): int
+    public function getBottomRightYOffset()
     {
         return $this->bottomRightYOffset;
     }
 
     public function refresh(): void
     {
-        if ($this->worksheet !== null && $this->plotArea !== null) {
+        if ($this->worksheet !== null) {
             $this->plotArea->refresh($this->worksheet);
         }
     }
@@ -591,11 +638,11 @@ class Chart
     /**
      * Render the chart to given file (or stream).
      *
-     * @param ?string $outputDestination Name of the file render to
+     * @param string $outputDestination Name of the file render to
      *
      * @return bool true on success
      */
-    public function render(?string $outputDestination = null): bool
+    public function render($outputDestination = null)
     {
         if ($outputDestination == 'php://output') {
             $outputDestination = null;
@@ -612,173 +659,5 @@ class Chart
         $renderer = new $libraryName($this);
 
         return $renderer->render($outputDestination);
-    }
-
-    public function getRotX(): ?int
-    {
-        return $this->rotX;
-    }
-
-    public function setRotX(?int $rotX): self
-    {
-        $this->rotX = $rotX;
-
-        return $this;
-    }
-
-    public function getRotY(): ?int
-    {
-        return $this->rotY;
-    }
-
-    public function setRotY(?int $rotY): self
-    {
-        $this->rotY = $rotY;
-
-        return $this;
-    }
-
-    public function getRAngAx(): ?int
-    {
-        return $this->rAngAx;
-    }
-
-    public function setRAngAx(?int $rAngAx): self
-    {
-        $this->rAngAx = $rAngAx;
-
-        return $this;
-    }
-
-    public function getPerspective(): ?int
-    {
-        return $this->perspective;
-    }
-
-    public function setPerspective(?int $perspective): self
-    {
-        $this->perspective = $perspective;
-
-        return $this;
-    }
-
-    public function getOneCellAnchor(): bool
-    {
-        return $this->oneCellAnchor;
-    }
-
-    public function setOneCellAnchor(bool $oneCellAnchor): self
-    {
-        $this->oneCellAnchor = $oneCellAnchor;
-
-        return $this;
-    }
-
-    public function getAutoTitleDeleted(): bool
-    {
-        return $this->autoTitleDeleted;
-    }
-
-    public function setAutoTitleDeleted(bool $autoTitleDeleted): self
-    {
-        $this->autoTitleDeleted = $autoTitleDeleted;
-
-        return $this;
-    }
-
-    public function getNoFill(): bool
-    {
-        return $this->noFill;
-    }
-
-    public function setNoFill(bool $noFill): self
-    {
-        $this->noFill = $noFill;
-
-        return $this;
-    }
-
-    public function getNoBorder(): bool
-    {
-        return $this->noBorder;
-    }
-
-    public function setNoBorder(bool $noBorder): self
-    {
-        $this->noBorder = $noBorder;
-
-        return $this;
-    }
-
-    public function getRoundedCorners(): bool
-    {
-        return $this->roundedCorners;
-    }
-
-    public function setRoundedCorners(?bool $roundedCorners): self
-    {
-        if ($roundedCorners !== null) {
-            $this->roundedCorners = $roundedCorners;
-        }
-
-        return $this;
-    }
-
-    public function getBorderLines(): GridLines
-    {
-        return $this->borderLines;
-    }
-
-    public function setBorderLines(GridLines $borderLines): self
-    {
-        $this->borderLines = $borderLines;
-
-        return $this;
-    }
-
-    public function getFillColor(): ChartColor
-    {
-        return $this->fillColor;
-    }
-
-    public function setRenderedWidth(?float $width): self
-    {
-        $this->renderedWidth = $width;
-
-        return $this;
-    }
-
-    public function getRenderedWidth(): ?float
-    {
-        return $this->renderedWidth;
-    }
-
-    public function setRenderedHeight(?float $height): self
-    {
-        $this->renderedHeight = $height;
-
-        return $this;
-    }
-
-    public function getRenderedHeight(): ?float
-    {
-        return $this->renderedHeight;
-    }
-
-    /**
-     * Implement PHP __clone to create a deep clone, not just a shallow copy.
-     */
-    public function __clone()
-    {
-        $this->worksheet = null;
-        $this->title = ($this->title === null) ? null : clone $this->title;
-        $this->legend = ($this->legend === null) ? null : clone $this->legend;
-        $this->xAxisLabel = ($this->xAxisLabel === null) ? null : clone $this->xAxisLabel;
-        $this->yAxisLabel = ($this->yAxisLabel === null) ? null : clone $this->yAxisLabel;
-        $this->plotArea = ($this->plotArea === null) ? null : clone $this->plotArea;
-        $this->xAxis = clone $this->xAxis;
-        $this->yAxis = clone $this->yAxis;
-        $this->borderLines = clone $this->borderLines;
-        $this->fillColor = clone $this->fillColor;
     }
 }

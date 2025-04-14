@@ -5,36 +5,48 @@ namespace PhpOffice\PhpSpreadsheet\Calculation\Financial\CashFlow;
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use PhpOffice\PhpSpreadsheet\Calculation\Financial\Constants as FinancialConstants;
 use PhpOffice\PhpSpreadsheet\Calculation\Financial\FinancialValidations;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
+use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 
 class CashFlowValidations extends FinancialValidations
 {
-    public static function validateRate(mixed $rate): float
+    /**
+     * @param mixed $rate
+     */
+    public static function validateRate($rate): float
     {
         $rate = self::validateFloat($rate);
 
         return $rate;
     }
 
-    public static function validatePeriodType(mixed $type): int
+    /**
+     * @param mixed $type
+     */
+    public static function validatePeriodType($type): int
     {
         $rate = self::validateInt($type);
         if (
-            $type !== FinancialConstants::PAYMENT_END_OF_PERIOD
-            && $type !== FinancialConstants::PAYMENT_BEGINNING_OF_PERIOD
+            $type !== FinancialConstants::PAYMENT_END_OF_PERIOD &&
+            $type !== FinancialConstants::PAYMENT_BEGINNING_OF_PERIOD
         ) {
-            throw new Exception(ExcelError::NAN());
+            throw new Exception(Functions::NAN());
         }
 
         return $rate;
     }
 
-    public static function validatePresentValue(mixed $presentValue): float
+    /**
+     * @param mixed $presentValue
+     */
+    public static function validatePresentValue($presentValue): float
     {
         return self::validateFloat($presentValue);
     }
 
-    public static function validateFutureValue(mixed $futureValue): float
+    /**
+     * @param mixed $futureValue
+     */
+    public static function validateFutureValue($futureValue): float
     {
         return self::validateFloat($futureValue);
     }

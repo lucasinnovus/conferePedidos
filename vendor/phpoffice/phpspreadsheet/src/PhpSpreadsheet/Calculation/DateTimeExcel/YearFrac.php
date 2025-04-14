@@ -2,16 +2,12 @@
 
 namespace PhpOffice\PhpSpreadsheet\Calculation\DateTimeExcel;
 
-use PhpOffice\PhpSpreadsheet\Calculation\ArrayEnabled;
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
 use PhpOffice\PhpSpreadsheet\Shared\Date as SharedDateHelper;
 
 class YearFrac
 {
-    use ArrayEnabled;
-
     /**
      * YEARFRAC.
      *
@@ -27,28 +23,19 @@ class YearFrac
      *
      * @param mixed $startDate Excel date serial value (float), PHP date timestamp (integer),
      *                                    PHP DateTime object, or a standard date string
-     *                         Or can be an array of values
      * @param mixed $endDate Excel date serial value (float), PHP date timestamp (integer),
      *                                    PHP DateTime object, or a standard date string
-     *                         Or can be an array of methods
-     * @param array|int $method Method used for the calculation
+     * @param int $method Method used for the calculation
      *                                        0 or omitted    US (NASD) 30/360
      *                                        1                Actual/actual
      *                                        2                Actual/360
      *                                        3                Actual/365
      *                                        4                European 30/360
-     *                         Or can be an array of methods
      *
-     * @return array|float|int|string fraction of the year, or a string containing an error
-     *         If an array of values is passed for the $startDate or $endDays,arguments, then the returned result
-     *            will also be an array with matching dimensions
+     * @return float|string fraction of the year, or a string containing an error
      */
-    public static function fraction(mixed $startDate, mixed $endDate, array|int|string|null $method = 0): array|string|int|float
+    public static function fraction($startDate, $endDate, $method = 0)
     {
-        if (is_array($startDate) || is_array($endDate) || is_array($method)) {
-            return self::evaluateArrayArguments([self::class, __FUNCTION__], $startDate, $endDate, $method);
-        }
-
         try {
             $method = (int) Helpers::validateNumericNull($method);
             $sDate = Helpers::getDateValue($startDate);
@@ -61,20 +48,29 @@ class YearFrac
             return $e->getMessage();
         }
 
-        return match ($method) {
-            0 => Functions::scalar(Days360::between($startDate, $endDate)) / 360,
-            1 => self::method1($startDate, $endDate),
-            2 => Functions::scalar(Difference::interval($startDate, $endDate)) / 360,
-            3 => Functions::scalar(Difference::interval($startDate, $endDate)) / 365,
-            4 => Functions::scalar(Days360::between($startDate, $endDate, true)) / 360,
-            default => ExcelError::NAN(),
-        };
+        switch ($method) {
+            case 0:
+                return Days360::between($startDate, $endDate) / 360;
+            case 1:
+                return self::method1($startDate, $endDate);
+            case 2:
+                return Difference::interval($startDate, $endDate) / 360;
+            case 3:
+                return Difference::interval($startDate, $endDate) / 365;
+            case 4:
+                return Days360::between($startDate, $endDate, true) / 360;
+        }
+
+        return Functions::NAN();
     }
 
     /**
      * Excel 1900 calendar treats date argument of null as 1900-01-00. Really.
+     *
+     * @param mixed $startDate
+     * @param mixed $endDate
      */
-    private static function excelBug(float $sDate, mixed $startDate, mixed $endDate, int $method): float
+    private static function excelBug(float $sDate, $startDate, $endDate, int $method): float
     {
         if (Functions::getCompatibilityMode() !== Functions::COMPATIBILITY_OPENOFFICE && SharedDateHelper::getExcelCalendar() !== SharedDateHelper::CALENDAR_MAC_1904) {
             if ($endDate === null && $startDate !== null) {
@@ -91,7 +87,7 @@ class YearFrac
 
     private static function method1(float $startDate, float $endDate): float
     {
-        $days = Functions::scalar(Difference::interval($startDate, $endDate));
+        $days = Difference::interval($startDate, $endDate);
         $startYear = (int) DateParts::year($startDate);
         $endYear = (int) DateParts::year($endDate);
         $years = $endYear - $startYear + 1;

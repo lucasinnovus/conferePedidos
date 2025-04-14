@@ -4,7 +4,7 @@ namespace PhpOffice\PhpSpreadsheet\Reader\Xls\Color;
 
 class BIFF8
 {
-    private const BIFF8_COLOR_MAP = [
+    protected static $map = [
         0x08 => '000000',
         0x09 => 'FFFFFF',
         0x0A => 'FF0000',
@@ -65,9 +65,17 @@ class BIFF8
 
     /**
      * Map color array from BIFF8 built-in color index.
+     *
+     * @param int $color
+     *
+     * @return array
      */
-    public static function lookup(int $color): array
+    public static function lookup($color)
     {
-        return ['rgb' => self::BIFF8_COLOR_MAP[$color] ?? '000000'];
+        if (isset(self::$map[$color])) {
+            return ['rgb' => self::$map[$color]];
+        }
+
+        return ['rgb' => '000000'];
     }
 }

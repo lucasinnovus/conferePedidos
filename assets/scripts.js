@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
         xhr.onload = function () {
             if (xhr.status === 200) {
                 const resposta = xhr.responseText;
+                console.log(resposta);
                 const pedidos = JSON.parse(resposta);
                 const cativo = Object.values(pedidos[0])[0];
                 const litrosTotaisCativo = Object.values(pedidos[0])[1];

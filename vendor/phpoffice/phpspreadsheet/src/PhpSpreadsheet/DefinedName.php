@@ -10,33 +10,45 @@ abstract class DefinedName
 
     /**
      * Name.
+     *
+     * @var string
      */
-    protected string $name;
+    protected $name;
 
     /**
      * Worksheet on which the defined name can be resolved.
+     *
+     * @var Worksheet
      */
-    protected ?Worksheet $worksheet;
+    protected $worksheet;
 
     /**
      * Value of the named object.
+     *
+     * @var string
      */
-    protected string $value;
+    protected $value;
 
     /**
      * Is the defined named local? (i.e. can only be used on $this->worksheet).
+     *
+     * @var bool
      */
-    protected bool $localOnly;
+    protected $localOnly;
 
     /**
      * Scope.
+     *
+     * @var Worksheet
      */
-    protected ?Worksheet $scope;
+    protected $scope;
 
     /**
      * Whether this is a named range or a named formula.
+     *
+     * @var bool
      */
-    protected bool $isFormula;
+    protected $isFormula;
 
     /**
      * Create a new Defined Name.
@@ -66,12 +78,6 @@ abstract class DefinedName
         $this->isFormula = self::testIfFormula($this->value);
     }
 
-    public function __destruct()
-    {
-        $this->worksheet = null;
-        $this->scope = null;
-    }
-
     /**
      * Create a new defined name, either a range or a formula.
      */
@@ -93,7 +99,7 @@ abstract class DefinedName
 
     public static function testIfFormula(string $value): bool
     {
-        if (str_starts_with($value, '=')) {
+        if (substr($value, 0, 1) === '=') {
             $value = substr($value, 1);
         }
 
@@ -104,10 +110,9 @@ abstract class DefinedName
         $segMatcher = false;
         foreach (explode("'", $value) as $subVal) {
             //    Only test in alternate array entries (the non-quoted blocks)
-            $segMatcher = $segMatcher === false;
             if (
-                $segMatcher
-                && (preg_match('/' . self::REGEXP_IDENTIFY_FORMULA . '/miu', $subVal))
+                ($segMatcher = !$segMatcher) &&
+                (preg_match('/' . self::REGEXP_IDENTIFY_FORMULA . '/miu', $subVal))
             ) {
                 return true;
             }
@@ -135,19 +140,17 @@ abstract class DefinedName
 
             // Re-attach
             if ($this->worksheet !== null) {
-                $this->worksheet->getParentOrThrow()->removeNamedRange($this->name, $this->worksheet);
+                $this->worksheet->getParent()->removeNamedRange($this->name, $this->worksheet);
             }
             $this->name = $name;
 
             if ($this->worksheet !== null) {
-                $this->worksheet->getParentOrThrow()->addDefinedName($this);
+                $this->worksheet->getParent()->addNamedRange($this);
             }
 
-            if ($this->worksheet !== null) {
-                // New title
-                $newTitle = $this->name;
-                ReferenceHelper::getInstance()->updateNamedFormulae($this->worksheet->getParentOrThrow(), $oldTitle, $newTitle);
-            }
+            // New title
+            $newTitle = $this->name;
+            ReferenceHelper::getInstance()->updateNamedFormulas($this->worksheet->getParent(), $oldTitle, $newTitle);
         }
 
         return $this;
@@ -243,13 +246,13 @@ abstract class DefinedName
         if ($sheetName === '') {
             $worksheet2 = $worksheet;
         } else {
-            $worksheet2 = $worksheet->getParentOrThrow()->getSheetByName($sheetName);
+            $worksheet2 = $worksheet->getParent()->getSheetByName($sheetName);
             if ($worksheet2 === null) {
                 return null;
             }
         }
 
-        return $worksheet->getParentOrThrow()->getDefinedName($definedName, $worksheet2);
+        return $worksheet->getParent()->getDefinedName($definedName, $worksheet2);
     }
 
     /**
