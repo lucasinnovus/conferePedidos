@@ -198,16 +198,24 @@ for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
     if (!empty($chave2)) {
         if (isset($tabela_lookup2[$chave2])) {
             $valorEncontrado = $tabela_lookup2[$chave2];
-        } else {
+        } 
+        else 
+        {
 
-            // printará o número do pedido relacionado cujo a diferença seja igual a "#N/D. ".
+            // pegara o número do pedido relacionado cujo a diferença seja igual a "#N/D. ".
             $pedidos2 = $sheet2->getCell("Y$row2")->getCalculatedValue();
-                
+                       
             // Somará todos os litros dos pedidos iguais à "#N/D. "
             $litro2 = $sheet2->getCell("AB$row2")->getCalculatedValue();
-            $LitrosTotaisPetronas += is_numeric($litro2) ? $litro2 : 0;
-            
-            $pedidosPetronas[] = "('$pedidos2')";
+
+            $pedidosIgnorados = ["56762"];
+
+            // Verifica se o pedido NÃO está na lista de ignorados
+            if (!in_array($pedidos2, $pedidosIgnorados)) {
+                $LitrosTotaisPetronas += is_numeric($litro2) ? $litro2 : 0;
+                $pedidosPetronas[] = "('$pedidos2')";
+            }
+
 
             // Define o erro #N/D real do Excel
             $valorEncontrado = '=NA()';
@@ -223,6 +231,8 @@ for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
         }
     }
 }
+
+
 
 $arraySemDuplicatas = array_keys(array_flip($pedidosPetronas));
 $pedidos[] = [
