@@ -18,15 +18,15 @@ if (isset($data['cativo']) && is_array($data['cativo'])) {
         die("Erro ao preparar a query: " . mysqli_error($myConn));
     }
 
+    mysqli_stmt_bind_param($stmt, 's', $nrpedido);
+
     foreach ($data['cativo'] as $row) {
         $nrpedido = preg_replace("/[^A-z0-9 ]/", "", $row);
 
-        try {
-            mysqli_stmt_bind_param($stmt, 's', $nrpedido);
-            mysqli_stmt_execute($stmt);
-        } catch (Exception $e) {
+        if (!mysqli_stmt_execute($stmt)) {
             $errors[] = [
-                'Error' => $e = mysqli_stmt_error($stmt)
+                'pedido' => $nrpedido,
+                'error' => mysqli_stmt_error($stmt)
             ];
         }
     }
@@ -37,7 +37,7 @@ if (isset($data['cativo']) && is_array($data['cativo'])) {
     if (empty($errors)) {
         echo json_encode(['status' => 'Success']);
     } else {
-        echo json_encode($error, JSON_PRETTY_PRINT);
+        echo json_encode(['status' => 'Failed', 'Errors' => $errors], JSON_PRETTY_PRINT);
     }
 }
 
