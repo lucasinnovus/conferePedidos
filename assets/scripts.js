@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", function () {
         xhr.onload = function () {
             if (xhr.status === 200) {
                 const resposta = xhr.responseText;
-                console.log(resposta);
                 const pedidos = JSON.parse(resposta);
                 const cativo = Object.values(pedidos[0])[0];
                 const litrosTotaisCativo = Object.values(pedidos[0])[1];
@@ -42,12 +41,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 body.classList.remove('h-screen');
                 body.classList.add('h-full');
                 response.classList.toggle("hidden");
-
-                response.innerHTML = `
-                    <h2 class="text-sm text-blue-600 font-bold">
-                        Copie os códigos e insira no banco através da consulta InsertPedidosAEnviar.
-                    </h2>
-                `;
 
                 listaPedidos(cativo, "Cativo");
                 listaPedidos(petronas, "Petronas");
@@ -75,34 +68,60 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (e.target.textContent === 'Pedidos Petronas') {
                         e.target.textContent = 'Pedidos Cativo';
                         litrosSpan.textContent = `Litros Totais: ${litrosTotaisPetronas}`;
-                        copyButton.classList.toggle('hidden');
-                    }else{
+                        sendButton.classList.toggle('hidden');
+                    } else {
                         e.target.textContent = 'Pedidos Petronas';
                         litrosSpan.textContent = `Litros Totais: ${litrosTotaisCativo}`;
-                        copyButton.classList.toggle('hidden');
+                        sendButton.classList.toggle('hidden');
                     }
                 })
 
-                let copyButton = document.getElementById("copy");
-                if (!copyButton) {
-                    copyButton = document.createElement("button");
-                    copyButton.type = "button";
-                    copyButton.id = "copy";
-                    copyButton.textContent = "Copiar Pedidos";
-                    copyButton.classList.add("mt-2", "w-48", "font-bold", "cursor-pointer", "bg-green-300", "hover:bg-green-400", "transition", "duration-150", "rounded-md", "p-2");
-                    response.appendChild(copyButton);
+                let sendButton = document.getElementById("copy");
+                if (!sendButton) {
+                    sendButton = document.createElement("button");
+                    sendButton.type = "button";
+                    sendButton.id = "copy";
+                    sendButton.textContent = "Enviar Pedidos";
+                    sendButton.classList.add("mt-2", "w-48", "font-bold", "cursor-pointer", "bg-green-300", "hover:bg-green-400", "transition", "duration-150", "rounded-md", "p-2");
+                    response.appendChild(sendButton);
+                    sendButton.addEventListener("click", function () {
 
-                    copyButton.addEventListener("click", function () {
-                        const listaItens = document.querySelectorAll("#listaPedidosCativo li");
-                        const textoParaCopiar = Array.from(listaItens)
-                            .map(li => li.textContent.trim())
-                            .join('\n');
+                        if (typeof cativo === 'undefined' || !Array.isArray(cativo) || cativo.length === 0) {
+                            alert('Nenhum pedido a enviar!');
+                            return;
+                        }
 
-                        navigator.clipboard.writeText(textoParaCopiar)
-                            .then(() => alert("Pedidos copiados com sucesso!"))
-                            .catch(err => console.error("Erro ao copiar: ", err));
+                        const sendBanco = new XMLHttpRequest();
+                        sendBanco.open("POST", "enviarBanco.php", true);
+                        sendBanco.setRequestHeader("Content-Type", "application/json");
+
+                        sendButton.disabled = true;
+                        sendButton.textContent = "Enviando...";
+
+                        const data = {
+                            cativo: cativo
+                        };
+
+                        sendBanco.onreadystatechange = function () {
+                            if (sendBanco.readyState === 4 && sendBanco.status === 200) {
+                                sendButton.disabled = false;
+                                sendButton.textContent = "Enviar Pedidos";
+                                try {
+                                    const json = JSON.parse(sendBanco.responseText);
+
+                                    if (json.status === 'Success') {
+                                        alert('Pedidos Enviados com Sucesso');
+                                    } else {
+                                        alert('Erro ao enviar o Pedido');
+                                    }
+                                } catch (e) {
+                                    console.log('Erro ao buscar pedidos', e);
+                                    console.log("Resposta do servidor:", sendBanco.responseText);
+                                }
+                            }
+                        }
+                        sendBanco.send(JSON.stringify(data));
                     });
-
                 }
 
                 toggleLoader();
@@ -159,13 +178,13 @@ document.addEventListener("DOMContentLoaded", function () {
         showFileList(e.target.files);
     });
 
-    function listaPedidos(empresa,nome) {
+    function listaPedidos(empresa, nome) {
         const listaPedidos = document.createElement("ul");
         listaPedidos.id = `listaPedidos${nome}`;
-        if(nome === "Petronas")
+        if (nome === "Petronas")
             listaPedidos.classList.add("list-none", "mt-2", "hidden");
         else
-        listaPedidos.classList.add("list-none", "mt-2");
+            listaPedidos.classList.add("list-none", "mt-2");
         empresa.forEach((pedido, index) => {
             const li = document.createElement("li");
             li.textContent = pedido + (index !== empresa.length - 1 ? "," : "");

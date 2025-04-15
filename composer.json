@@ -1,6 +1,7 @@
 {
     "name": "rjunior/php-excel",
     "require": {
-        "phpoffice/phpspreadsheet": "^1.19.0"
+        "phpoffice/phpspreadsheet": "^1.19.0",
+        "vlucas/phpdotenv": "^5.6"
     }
 }
