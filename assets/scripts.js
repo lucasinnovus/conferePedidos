@@ -144,6 +144,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             empresa.forEach((pedido, index) => {
                 const li = document.createElement("li");
+                li.id = pedido;
                 li.textContent = pedido + (index !== empresa.length - 1 ? "," : "");
                 listaPedidos.appendChild(li);
             });
@@ -158,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
         sendButton.id = `button-${nome}`;
         const textoOriginal = nome === 'petronas' ? 'Cancelar Pedidos' : 'Enviar Pedidos';
         sendButton.textContent = textoOriginal;
-        nome === 'petronas' ? sendButton.classList.add('hidden','bg-red-300', 'hover:bg-red-400') : sendButton.classList.add('bg-green-300', 'hover:bg-green-400');
+        nome === 'petronas' ? sendButton.classList.add('hidden', 'bg-red-300', 'hover:bg-red-400') : sendButton.classList.add('bg-green-300', 'hover:bg-green-400');
         sendButton.classList.add("mt-2", "w-48", "font-bold", "cursor-pointer", "bg-green-300", "hover:bg-green-400", "transition", "duration-150", "rounded-md", "p-2");
         response.appendChild(sendButton);
 
@@ -182,13 +183,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     sendButton.disabled = false;
                     sendButton.textContent = textoOriginal;
-
                     try {
                         const json = JSON.parse(xhr.responseText);
+                        const pedidosErro = Object.values(json);
+                        let pedidosErroParsed = [];
+                        pedidosErro.forEach(pedidos => {
+                            pedidosErroParsed.push(`('${pedidos.pedido}')`);
+                        });
                         if (json.status === 'Success') {
                             alert('Solicitação concluída com sucesso!')
                         } else {
-                            alert('Falha na Solicitação!')
+                            const lista = document.getElementById(`listaPedidos${nome}`);
+
+                            alert('Falha na Solicitação!' + pedidosErroParsed)
                         }
                     } catch (err) {
                         console.log('Erro ao buscar pedidos', err);

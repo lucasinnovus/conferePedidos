@@ -228,6 +228,8 @@ $arraySemDuplicatas = array_keys(array_flip($pedidosPetronas));
 $pedidos[] = [
     "petronas" => $arraySemDuplicatas,
     "litrosTotaisPetronas" => $LitrosTotaisPetronas,
+    "planilhaCat" => $planilhaCativo,
+    "planilhaPetr" => $planilhaCativo
 ];
 
 $jsonPedidos = json_encode($pedidos, true | JSON_PRETTY_PRINT);
@@ -251,10 +253,11 @@ $writer2 = IOFactory::createWriter($spreadsheet2, 'Xlsx');
 $writer2->save($diretorioDestino . "Confere Petronas $timestamp.xlsx");
 
 if (file_exists($planilhaCativo)) {
-    unlink($planilhaCativo);
+    rename($planilhaCativo, 'uploads/' . 'Confere Cativo ' . date('Y-m-d_H-i-s',strtotime("-1 days")) . '.xlsx');
+
 }
 if (file_exists($planilhaPetronas)) {
-    unlink($planilhaPetronas);
+    rename($planilhaPetronas, 'uploads/' . 'Confere Petronas ' . date('Y-m-d_H-i-s',strtotime("-1 days")) . '.xlsx');
 }
 if (file_exists('planilha1_atualizada.xlsx')) {
     unlink('planilha1_atualizada.xlsx');
