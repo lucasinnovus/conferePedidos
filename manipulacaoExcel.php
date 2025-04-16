@@ -82,7 +82,6 @@ $highestRow = $sheet2->getHighestRow();
 // Aplica a fórmula dinamicamente na coluna E no arquivo 2
 for ($row = 2; $row <= $highestRow; $row++) {
     $sheet2->setCellValue("Y$row", "=SUBSTITUTE(UPPER(R$row), \"CATIVO-\", \"\")");
-
     $sheet2->setCellValue("Z$row", "=Y$row&S$row"); // Concatena valores das colunas D e A na coluna E
 }
 
@@ -165,8 +164,8 @@ for ($row1 = 2; $row1 <= $highestRow1; $row1++) {
 }
 $pedidosCativo = array_values(array_unique($pedidosCativo, SORT_REGULAR));
 $pedidos[] = [
-   "cativo" => $pedidosCativo,
-   "litrosTotaisCativo" => $litrosTotais,
+    "cativo" => $pedidosCativo,
+    "litrosTotaisCativo" => $litrosTotais,
 ];
 
 
@@ -195,27 +194,19 @@ $LitrosTotaisPetronas = 0;
 for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
     $chave2 = trim($sheet2->getCell($colunaChavePlanilha2 . $row2)->getCalculatedValue());
 
-    if (!empty($chave2)) {
+    if (!empty($chave2) && !preg_match("/GRAXA/", $chave2)) {
         if (isset($tabela_lookup2[$chave2])) {
             $valorEncontrado = $tabela_lookup2[$chave2];
-        } 
-        else 
-        {
+        } else {
 
             // pegara o número do pedido relacionado cujo a diferença seja igual a "#N/D. ".
             $pedidos2 = $sheet2->getCell("Y$row2")->getCalculatedValue();
-                       
+
             // Somará todos os litros dos pedidos iguais à "#N/D. "
             $litro2 = $sheet2->getCell("AB$row2")->getCalculatedValue();
 
-            $pedidosIgnorados = ["56762"];
-
-            // Verifica se o pedido NÃO está na lista de ignorados
-            if (!in_array($pedidos2, $pedidosIgnorados)) {
-                $LitrosTotaisPetronas += is_numeric($litro2) ? $litro2 : 0;
-                $pedidosPetronas[] = "('$pedidos2')";
-            }
-
+            $LitrosTotaisPetronas += is_numeric($litro2) ? $litro2 : 0;
+            $pedidosPetronas[] = "('$pedidos2')";
 
             // Define o erro #N/D real do Excel
             $valorEncontrado = '=NA()';
@@ -233,14 +224,13 @@ for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
 }
 
 
-
 $arraySemDuplicatas = array_keys(array_flip($pedidosPetronas));
 $pedidos[] = [
     "petronas" => $arraySemDuplicatas,
     "litrosTotaisPetronas" => $LitrosTotaisPetronas,
 ];
 
-$jsonPedidos = json_encode($pedidos, true |JSON_PRETTY_PRINT);
+$jsonPedidos = json_encode($pedidos, true | JSON_PRETTY_PRINT);
 echo $jsonPedidos;
 $diretorioDestino = 'planilhas/';
 

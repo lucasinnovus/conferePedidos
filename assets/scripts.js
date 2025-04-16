@@ -60,6 +60,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     response.appendChild(handleList);
                 }
 
+                const buttonPetronas = createSendButton('petronas', petronas);
+                const buttonCativo = createSendButton('cativo', cativo);
                 handleList.addEventListener('click', function (e) {
                     const listaPedidosPetronas = document.getElementById('listaPedidosPetronas');
                     const listaPedidosCativo = document.getElementById('listaPedidosCativo');
@@ -67,63 +69,16 @@ document.addEventListener("DOMContentLoaded", function () {
                     listaPedidosPetronas.classList.toggle('hidden')
                     if (e.target.textContent === 'Pedidos Petronas') {
                         e.target.textContent = 'Pedidos Cativo';
-                        litrosSpan.textContent = `Litros Totais: ${litrosTotaisPetronas}`;
-                        sendButton.classList.toggle('hidden');
+                        petronas.length !== 0 ? litrosSpan.textContent = `Litros Totais: ${litrosTotaisPetronas}` : litrosSpan.textContent = '';
+                        buttonPetronas.classList.toggle('hidden');
+                        buttonCativo.classList.toggle('hidden');
                     } else {
                         e.target.textContent = 'Pedidos Petronas';
-                        litrosSpan.textContent = `Litros Totais: ${litrosTotaisCativo}`;
-                        sendButton.classList.toggle('hidden');
+                        litrosSpan.textContent = `Litros Totais: ${litrosTotaisCativo}`
+                        buttonCativo.classList.toggle('hidden');
+                        buttonPetronas.classList.toggle('hidden');
                     }
                 })
-
-                let sendButton = document.getElementById("copy");
-                if (!sendButton) {
-                    sendButton = document.createElement("button");
-                    sendButton.type = "button";
-                    sendButton.id = "copy";
-                    sendButton.textContent = "Enviar Pedidos";
-                    sendButton.classList.add("mt-2", "w-48", "font-bold", "cursor-pointer", "bg-green-300", "hover:bg-green-400", "transition", "duration-150", "rounded-md", "p-2");
-                    response.appendChild(sendButton);
-                    sendButton.addEventListener("click", function () {
-
-                        if (typeof cativo === 'undefined' || !Array.isArray(cativo) || cativo.length === 0) {
-                            alert('Nenhum pedido a enviar!');
-                            return;
-                        }
-
-                        const sendBanco = new XMLHttpRequest();
-                        sendBanco.open("POST", "enviarBanco.php", true);
-                        sendBanco.setRequestHeader("Content-Type", "application/json");
-
-                        sendButton.disabled = true;
-                        sendButton.textContent = "Enviando...";
-
-                        const data = {
-                            cativo: cativo
-                        };
-
-                        sendBanco.onreadystatechange = function () {
-                            if (sendBanco.readyState === 4 && sendBanco.status === 200) {
-                                sendButton.disabled = false;
-                                sendButton.textContent = "Enviar Pedidos";
-                                try {
-                                    const json = JSON.parse(sendBanco.responseText);
-
-                                    if (json.status === 'Success') {
-                                        alert('Pedidos Enviados com Sucesso');
-                                    } else {
-                                        alert('Erro ao enviar o Pedido');
-                                    }
-                                } catch (e) {
-                                    console.log('Erro ao buscar pedidos', e);
-                                    console.log("Resposta do servidor:", sendBanco.responseText);
-                                }
-                            }
-                        }
-                        sendBanco.send(JSON.stringify(data));
-                    });
-                }
-
                 toggleLoader();
             } else {
                 response.innerHTML = `<p class="text-red-500">Erro ao Enviar!</p>`;
@@ -181,16 +136,69 @@ document.addEventListener("DOMContentLoaded", function () {
     function listaPedidos(empresa, nome) {
         const listaPedidos = document.createElement("ul");
         listaPedidos.id = `listaPedidos${nome}`;
-        if (nome === "Petronas")
-            listaPedidos.classList.add("list-none", "mt-2", "hidden");
-        else
-            listaPedidos.classList.add("list-none", "mt-2");
-        empresa.forEach((pedido, index) => {
+        nome === 'Petronas' ? listaPedidos.classList.add("list-none", "mt-2", "hidden") : listaPedidos.classList.add("list-none", "mt-2");
+        if (empresa.length === 0) {
             const li = document.createElement("li");
-            li.textContent = pedido + (index !== empresa.length - 1 ? "," : "");
+            li.textContent = 'Nenhum pedido encontrado!';
             listaPedidos.appendChild(li);
-        });
+        } else {
+            empresa.forEach((pedido, index) => {
+                const li = document.createElement("li");
+                li.textContent = pedido + (index !== empresa.length - 1 ? "," : "");
+                listaPedidos.appendChild(li);
+            });
+        }
+
         response.appendChild(listaPedidos);
+    }
+
+    function createSendButton(nome, pedidos) {
+        let sendButton = document.createElement("button");
+        sendButton.type = "button";
+        sendButton.id = `button-${nome}`;
+        const textoOriginal = nome === 'petronas' ? 'Cancelar Pedidos' : 'Enviar Pedidos';
+        sendButton.textContent = textoOriginal;
+        nome === 'petronas' ? sendButton.classList.add('hidden','bg-red-300', 'hover:bg-red-400') : sendButton.classList.add('bg-green-300', 'hover:bg-green-400');
+        sendButton.classList.add("mt-2", "w-48", "font-bold", "cursor-pointer", "bg-green-300", "hover:bg-green-400", "transition", "duration-150", "rounded-md", "p-2");
+        response.appendChild(sendButton);
+
+        sendButton.addEventListener("click", function () {
+            if (typeof pedidos === 'undefined' || !Array.isArray(pedidos) || pedidos.length === 0) {
+                alert('Nenhum pedido a enviar!');
+                return;
+            }
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "enviarBanco.php", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            sendButton.disabled = true;
+            sendButton.textContent = "Processando...";
+
+            const data = {
+                [nome]: pedidos
+            };
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    sendButton.disabled = false;
+                    sendButton.textContent = textoOriginal;
+
+                    try {
+                        const json = JSON.parse(xhr.responseText);
+                        if (json.status === 'Success') {
+                            alert('Solicitação concluída com sucesso!')
+                        } else {
+                            alert('Falha na Solicitação!')
+                        }
+                    } catch (err) {
+                        console.log('Erro ao buscar pedidos', err);
+                        console.log("Resposta do servidor:", xhr.responseText);
+                    }
+                }
+            }
+            xhr.send(JSON.stringify(data));
+        });
+        return sendButton;
     }
 });
 
