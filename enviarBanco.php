@@ -3,7 +3,7 @@ include('includes/banco.php');
 
 $json = file_get_contents('php://input');
 $data = json_decode($json, true);
-var_dump($data);
+
 if (!$myConn) {
     die("Falha na conexão " . mysqli_connect_error());
 }
@@ -11,7 +11,7 @@ if (!$myConn) {
 if (isset($data['cativo']) && is_array($data['cativo'])) {
 
     $errors = [];
-    $sql = "INSERT INTO pedidosaenviar (nrpedido) VALUES (?) ";
+    $sql = "INSERT INTO pedidosAEnviar (nrpedido) VALUES (?) ";
     $stmt = mysqli_prepare($myConn, $sql);
 
     if (!$stmt) {
@@ -44,7 +44,7 @@ if (isset($data['cativo']) && is_array($data['cativo'])) {
 if (isset($data['petronas']) && is_array($data['petronas'])) {
 
     $errors = [];
-    $sql = "INSERT INTO pedidosacancelar (nrpedido) VALUES (?) ";
+    $sql = "INSERT INTO pedidosACancelar (nrpedido) VALUES (?) ";
     $stmt = mysqli_prepare($myConn, $sql);
 
     if (!$stmt) {
