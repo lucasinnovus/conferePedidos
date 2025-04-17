@@ -23,7 +23,7 @@
                 <label for="files[]" class="cursor-pointer flex flex-col gap-4">
                     <strong>Selecione as planilhas Cativo e Petronas</strong>
                     <span>ou arraste elas aqui!</span>
-                    <input id="files[]" type="file" class="hidden" name="files[]" multiple>
+                    <input id="files[]" type="file" class="hidden " name="files[]" multiple>
                 </label>
             </div>
             <ul class="list-disc" id="file-list"></ul>

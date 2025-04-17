@@ -186,24 +186,23 @@ document.addEventListener("DOMContentLoaded", function () {
                         const json = JSON.parse(xhr.responseText);
                         const listaLi = document.getElementById(`listaPedidos${nome}`).getElementsByTagName('li');
                         for (const elements of listaLi) {
-                            console.log(elements.id);
-                            if (json.status !== 'Success'){
+                            if (json.status !== 'Success') {
                                 json.forEach(erros => {
                                     if (erros.pedido !== elements.id) {
-                                        elements.classList.add('bg-green-300');
+                                        elements.classList.add('bg-success', 'text-success-content');
                                     }
                                 })
                             }
-                            elements.classList.remove('bg-red-300', "tooltip", "tooltip-content", "tooltip-right");
+                            elements.classList.remove('bg-error', "text-error-content", "tooltip", "tooltip-content", "tooltip-right");
                         }
                         if (json.status === 'Success') {
                             alert('Solicitação concluída com sucesso!')
                         } else {
                             json.forEach(erros => {
                                 const idErros = document.getElementById(`('${erros.pedido}')`);
-                                idErros.classList.remove('bg-white');
+                                idErros.classList.remove('bg-success', 'text-success-content');
                                 idErros.setAttribute('data-tip', `${erros.message}`);
-                                idErros.classList.add('bg-red-300', "tooltip", "tooltip-error", "tooltip-content", "tooltip-right");
+                                idErros.classList.add('bg-error', "text-error-content", "tooltip", "tooltip-error", "tooltip-content", "tooltip-right");
                             });
                             alert('Sucesso Parcial: Chaves Duplicadas Encontradas...');
                         }

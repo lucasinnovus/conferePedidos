@@ -228,8 +228,6 @@ $arraySemDuplicatas = array_keys(array_flip($pedidosPetronas));
 $pedidos[] = [
     "petronas" => $arraySemDuplicatas,
     "litrosTotaisPetronas" => $LitrosTotaisPetronas,
-    "planilhaCat" => $planilhaCativo,
-    "planilhaPetr" => $planilhaCativo
 ];
 
 $jsonPedidos = json_encode($pedidos, true | JSON_PRETTY_PRINT);

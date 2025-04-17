@@ -13,30 +13,28 @@ $tipo = (isset($data['cativo']) && is_array($data['cativo'])) ? 'cativo' : 'petr
 if ($tipo === 'cativo' || 'petronas') {
     $errors = [];
     $sql = $tipo === 'cativo' ? "INSERT INTO pedidosAEnviar (nrpedido) VALUES (?)" : "INSERT INTO pedidosACancelar (nrpedido) VALUES (?) ";
-    mysqli_begin_transaction($myConn);
-    mysqli_autocommit($myConn,false);
     $stmt = mysqli_prepare($myConn, $sql);
     if (!$stmt) {
         die("Erro ao preparar a query: " . mysqli_error($myConn));
     }
     mysqli_stmt_bind_param($stmt, 's', $nrpedido);
-
     foreach ($data[$tipo] as $row) {
         try {
             $nrpedido = preg_replace("/[^A-z0-9 ]/", "", $row);
             mysqli_stmt_execute($stmt);
         } catch (mysqli_sql_exception $e) {
-            mysqli_rollback($myConn);
             if ($e->getCode() === 1062) {
                 $errors[] = [
-                    'status'=> 'Error',
+                    'status' => 'Error',
                     'message' => $e->getMessage(),
                     'pedido' => $nrpedido
                 ];
             }
         }
-        mysqli_commit($myConn);
     }
+    mysqli_stmt_close($stmt);
+    mysqli_close($myConn);
+
     if (empty($errors)) {
         echo json_encode(['status' => 'Success']);
     } else {
