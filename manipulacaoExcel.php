@@ -8,6 +8,9 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 require 'vendor/autoload.php';
 
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
@@ -165,8 +168,8 @@ for ($row1 = 2; $row1 <= $highestRow1; $row1++) {
 }
 $pedidosCativo = array_values(array_unique($pedidosCativo, SORT_REGULAR));
 $pedidos[] = [
-   "cativo" => $pedidosCativo,
-   "litrosTotaisCativo" => $litrosTotais,
+    "cativo" => $pedidosCativo,
+    "litrosTotaisCativo" => $litrosTotais,
 ];
 
 
@@ -198,12 +201,10 @@ for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
     if (!empty($chave2) && !preg_match("/GRAXA/", $chave2)) {
         if (isset($tabela_lookup2[$chave2])) {
             $valorEncontrado = $tabela_lookup2[$chave2];
-        } 
-        else 
-        {
+        } else {
             // pegara o número do pedido relacionado cujo a diferença seja igual a "#N/D. ".
             $pedidos2 = $sheet2->getCell("Y$row2")->getCalculatedValue();
-                       
+
             // Somará todos os litros dos pedidos iguais à "#N/D. "
             $litro2 = $sheet2->getCell("AB$row2")->getCalculatedValue();
 
@@ -219,7 +220,7 @@ for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
             $valorEncontrado = '=NA()';
         }
 
-       
+
         // Insere o valor na coluna AA
         $sheet2->setCellValue('AA' . $row2, $valorEncontrado);
 
@@ -236,7 +237,7 @@ $pedidos[] = [
     "litrosTotaisPetronas" => $LitrosTotaisPetronas,
 ];
 
-$jsonPedidos = json_encode($pedidos, true |JSON_PRETTY_PRINT);
+$jsonPedidos = json_encode($pedidos, true | JSON_PRETTY_PRINT);
 echo $jsonPedidos;
 
 $datetime = new DateTime();
@@ -245,45 +246,52 @@ $datetime = new DateTime('now', new DateTimeZone('America/Sao_Paulo'));
 $datetime->modify('-1 day');
 $timestamp = $datetime->format('Y-m-d_H-i-s');
 
-$pastaAno =  $datetime->format('Y');
-$pastaMes = $datetime->format('m');
+if ($_ENV['STAGE'] === 'prod') {
+    $pastaAno = $datetime->format('Y');
+    $pastaMes = $datetime->format('m');
 
 // Caminho base na rede
-$base = '\\\\192.168.1.253\\desenvolvimento\\ksouza\\Confere Petronas';
+    $base = '\\\\192.168.1.253\\desenvolvimento\\ksouza\\Confere Petronas';
 
 // Diretórios
-$diretorioAno = $base . '\\' . $pastaAno;
-$diretorioDestino = $diretorioAno . '\\' . $pastaMes;
+    $diretorioAno = $base . '\\' . $pastaAno;
+    $diretorioDestino = $diretorioAno . '\\' . $pastaMes;
 
 // Criar pasta do ano, se não existir
-if (!file_exists($diretorioAno)) {
-    mkdir($diretorioAno, 0777, true);
-}
+    if (!file_exists($diretorioAno)) {
+        mkdir($diretorioAno, 0777, true);
+    }
 
 // Criar pasta do mês, se não existir
-if (!file_exists($diretorioDestino)) {
-    mkdir($diretorioDestino, 0777, true);
-}
+    if (!file_exists($diretorioDestino)) {
+        mkdir($diretorioDestino, 0777, true);
+    }
 
 // Salvar a primeira planilha
-$writer1 = IOFactory::createWriter($spreadsheet1, 'Xlsx');
-$writer1->save($diretorioDestino . "\\Confere Cativo $timestamp.xlsx");
+    $writer1 = IOFactory::createWriter($spreadsheet1, 'Xlsx');
+    $writer1->save($diretorioDestino . "\\Confere Cativo $timestamp.xlsx");
 
 // Salvar a segunda planilha
-$writer2 = IOFactory::createWriter($spreadsheet2, 'Xlsx');
-$writer2->save($diretorioDestino . "\\Confere Petronas $timestamp.xlsx");
+    $writer2 = IOFactory::createWriter($spreadsheet2, 'Xlsx');
+    $writer2->save($diretorioDestino . "\\Confere Petronas $timestamp.xlsx");
+} else {
+    $diretorioDestino = 'planilhas/';
 
-if (file_exists($planilhaCativo)) {
-    rename($planilhaCativo, 'uploads/' . "Confere Cativo $timestamp.xlsx");
+    $writer1 = IOFactory::createWriter($spreadsheet1, 'Xlsx');
+    $writer1->save($diretorioDestino . "\Confere Cativo $timestamp.xlsx");
 
+    $writer2 = IOFactory::createWriter($spreadsheet2, 'Xlsx');
+    $writer2->save($diretorioDestino . "\Confere Petronas $timestamp.xlsx");
 }
-if (file_exists($planilhaPetronas)) {
-    rename($planilhaPetronas, 'uploads/' . "Confere Petronas $timestamp.xlsx");
+
+if (file_exists($planilhaCativo) && file_exists($planilhaPetronas)) {
+    unlink($planilhaCativo);
+    unlink($planilhaPetronas);
 }
+
 if (file_exists('planilha1_atualizada.xlsx')) {
     unlink('planilha1_atualizada.xlsx');
 }
 if (file_exists('planilha2_atualizada.xlsx')) {
     unlink('planilha2_atualizada.xlsx');
 }
-
