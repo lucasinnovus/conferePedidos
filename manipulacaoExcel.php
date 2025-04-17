@@ -82,6 +82,7 @@ $highestRow = $sheet2->getHighestRow();
 // Aplica a fórmula dinamicamente na coluna E no arquivo 2
 for ($row = 2; $row <= $highestRow; $row++) {
     $sheet2->setCellValue("Y$row", "=SUBSTITUTE(UPPER(R$row), \"CATIVO-\", \"\")");
+
     $sheet2->setCellValue("Z$row", "=Y$row&S$row"); // Concatena valores das colunas D e A na coluna E
 }
 
@@ -164,8 +165,8 @@ for ($row1 = 2; $row1 <= $highestRow1; $row1++) {
 }
 $pedidosCativo = array_values(array_unique($pedidosCativo, SORT_REGULAR));
 $pedidos[] = [
-    "cativo" => $pedidosCativo,
-    "litrosTotaisCativo" => $litrosTotais,
+   "cativo" => $pedidosCativo,
+   "litrosTotaisCativo" => $litrosTotais,
 ];
 
 
@@ -197,21 +198,28 @@ for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
     if (!empty($chave2) && !preg_match("/GRAXA/", $chave2)) {
         if (isset($tabela_lookup2[$chave2])) {
             $valorEncontrado = $tabela_lookup2[$chave2];
-        } else {
-
+        } 
+        else 
+        {
             // pegara o número do pedido relacionado cujo a diferença seja igual a "#N/D. ".
             $pedidos2 = $sheet2->getCell("Y$row2")->getCalculatedValue();
-
+                       
             // Somará todos os litros dos pedidos iguais à "#N/D. "
             $litro2 = $sheet2->getCell("AB$row2")->getCalculatedValue();
 
-            $LitrosTotaisPetronas += is_numeric($litro2) ? $litro2 : 0;
-            $pedidosPetronas[] = "('$pedidos2')";
+            $pedidosIgnorados = ["57901"];
+
+            // Verifica se o pedido NÃO está na lista de ignorados
+            if (!in_array($pedidos2, $pedidosIgnorados)) {
+                $LitrosTotaisPetronas += is_numeric($litro2) ? $litro2 : 0;
+                $pedidosPetronas[] = "('$pedidos2')";
+            }
 
             // Define o erro #N/D real do Excel
             $valorEncontrado = '=NA()';
         }
 
+       
         // Insere o valor na coluna AA
         $sheet2->setCellValue('AA' . $row2, $valorEncontrado);
 
@@ -222,40 +230,55 @@ for ($row2 = 2; $row2 <= $highestRow2; $row2++) {
         }
     }
 }
-
-
 $arraySemDuplicatas = array_keys(array_flip($pedidosPetronas));
 $pedidos[] = [
     "petronas" => $arraySemDuplicatas,
     "litrosTotaisPetronas" => $LitrosTotaisPetronas,
 ];
 
-$jsonPedidos = json_encode($pedidos, true | JSON_PRETTY_PRINT);
+$jsonPedidos = json_encode($pedidos, true |JSON_PRETTY_PRINT);
 echo $jsonPedidos;
-$diretorioDestino = 'planilhas/';
 
-// Garante que a pasta de destino existe
-if (!is_dir($diretorioDestino)) {
+$datetime = new DateTime();
+
+$datetime = new DateTime('now', new DateTimeZone('America/Sao_Paulo'));
+$datetime->modify('-1 day');
+$timestamp = $datetime->format('Y-m-d_H-i-s');
+
+$pastaAno =  $datetime->format('Y');
+$pastaMes = $datetime->format('m');
+
+// Caminho base na rede
+$base = '\\\\192.168.1.253\\desenvolvimento\\ksouza\\Confere Petronas';
+
+// Diretórios
+$diretorioAno = $base . '\\' . $pastaAno;
+$diretorioDestino = $diretorioAno . '\\' . $pastaMes;
+
+// Criar pasta do ano, se não existir
+if (!file_exists($diretorioAno)) {
+    mkdir($diretorioAno, 0777, true);
+}
+
+// Criar pasta do mês, se não existir
+if (!file_exists($diretorioDestino)) {
     mkdir($diretorioDestino, 0777, true);
 }
 
-$datetime = new DateTime('now', new DateTimeZone('America/Sao_Paulo'));
-$timestamp = $datetime->format('Y-m-d_H-i-s');
-
 // Salvar a primeira planilha
 $writer1 = IOFactory::createWriter($spreadsheet1, 'Xlsx');
-$writer1->save($diretorioDestino . "Confere Cativo $timestamp.xlsx");
+$writer1->save($diretorioDestino . "\\Confere Cativo $timestamp.xlsx");
 
-// Agora salvar a segunda planilha
+// Salvar a segunda planilha
 $writer2 = IOFactory::createWriter($spreadsheet2, 'Xlsx');
-$writer2->save($diretorioDestino . "Confere Petronas $timestamp.xlsx");
+$writer2->save($diretorioDestino . "\\Confere Petronas $timestamp.xlsx");
 
 if (file_exists($planilhaCativo)) {
-    rename($planilhaCativo, 'uploads/' . 'Confere Cativo ' . date('Y-m-d_H-i-s',strtotime("-1 days")) . '.xlsx');
+    rename($planilhaCativo, 'uploads/' . "Confere Cativo $timestamp.xlsx");
 
 }
 if (file_exists($planilhaPetronas)) {
-    rename($planilhaPetronas, 'uploads/' . 'Confere Petronas ' . date('Y-m-d_H-i-s',strtotime("-1 days")) . '.xlsx');
+    rename($planilhaPetronas, 'uploads/' . "Confere Petronas $timestamp.xlsx");
 }
 if (file_exists('planilha1_atualizada.xlsx')) {
     unlink('planilha1_atualizada.xlsx');
@@ -263,3 +286,4 @@ if (file_exists('planilha1_atualizada.xlsx')) {
 if (file_exists('planilha2_atualizada.xlsx')) {
     unlink('planilha2_atualizada.xlsx');
 }
+
