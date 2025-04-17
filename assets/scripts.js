@@ -42,8 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 body.classList.add('h-full');
                 response.classList.toggle("hidden");
 
-                listaPedidos(cativo, "Cativo");
-                listaPedidos(petronas, "Petronas");
+                listaPedidos(cativo, "cativo");
+                listaPedidos(petronas, "petronas");
 
                 const litrosSpan = document.createElement("span");
                 litrosSpan.classList.add("text-green-600", "font-bold");
@@ -63,8 +63,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 const buttonPetronas = createSendButton('petronas', petronas);
                 const buttonCativo = createSendButton('cativo', cativo);
                 handleList.addEventListener('click', function (e) {
-                    const listaPedidosPetronas = document.getElementById('listaPedidosPetronas');
-                    const listaPedidosCativo = document.getElementById('listaPedidosCativo');
+                    const listaPedidosPetronas = document.getElementById('listaPedidospetronas');
+                    const listaPedidosCativo = document.getElementById('listaPedidoscativo');
                     listaPedidosCativo.classList.toggle('hidden');
                     listaPedidosPetronas.classList.toggle('hidden')
                     if (e.target.textContent === 'Pedidos Petronas') {
@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function listaPedidos(empresa, nome) {
         const listaPedidos = document.createElement("ul");
         listaPedidos.id = `listaPedidos${nome}`;
-        nome === 'Petronas' ? listaPedidos.classList.add("list-none", "mt-2", "hidden") : listaPedidos.classList.add("list-none", "mt-2");
+        nome === 'petronas' ? listaPedidos.classList.add("list-none", "flex", "flex-col", "gap-1", "mt-2", "hidden") : listaPedidos.classList.add("list-none", "flex", "flex-col", "gap-1", "mt-2");
         if (empresa.length === 0) {
             const li = document.createElement("li");
             li.textContent = 'Nenhum pedido encontrado!';
@@ -162,7 +162,6 @@ document.addEventListener("DOMContentLoaded", function () {
         nome === 'petronas' ? sendButton.classList.add('hidden', 'bg-red-300', 'hover:bg-red-400') : sendButton.classList.add('bg-green-300', 'hover:bg-green-400');
         sendButton.classList.add("mt-2", "w-48", "font-bold", "cursor-pointer", "bg-green-300", "hover:bg-green-400", "transition", "duration-150", "rounded-md", "p-2");
         response.appendChild(sendButton);
-
         sendButton.addEventListener("click", function () {
             if (typeof pedidos === 'undefined' || !Array.isArray(pedidos) || pedidos.length === 0) {
                 alert('Nenhum pedido a enviar!');
@@ -185,17 +184,21 @@ document.addEventListener("DOMContentLoaded", function () {
                     sendButton.textContent = textoOriginal;
                     try {
                         const json = JSON.parse(xhr.responseText);
-                        const pedidosErro = Object.values(json);
-                        let pedidosErroParsed = [];
-                        pedidosErro.forEach(pedidos => {
-                            pedidosErroParsed.push(`('${pedidos.pedido}')`);
-                        });
+                        const listaLi = document.getElementById(`listaPedidos${nome}`).getElementsByTagName('li');
+                        for (const elements of listaLi) {
+                            elements.classList.remove('bg-red-300', "tooltip", "tooltip-content", "tooltip-right");
+                            elements.classList.add('bg-white');
+                        }
                         if (json.status === 'Success') {
                             alert('Solicitação concluída com sucesso!')
                         } else {
-                            const lista = document.getElementById(`listaPedidos${nome}`);
-
-                            alert('Falha na Solicitação!' + pedidosErroParsed)
+                            json.forEach(erros => {
+                                const idErros = document.getElementById(`('${erros.pedido}')`);
+                                idErros.classList.remove('bg-white');
+                                idErros.setAttribute('data-tip', `${erros.message}`);
+                                idErros.classList.add('bg-red-300', "tooltip", "tooltip-error", "tooltip-content", "tooltip-right");
+                            });
+                            alert('Sucesso Parcial: Chaves Duplicadas Encontradas...');
                         }
                     } catch (err) {
                         console.log('Erro ao buscar pedidos', err);
