@@ -1,15 +1,17 @@
 <!doctype html>
-<html lang="pt-br">
+<html data-theme="corporate" lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
     <script src="assets/scripts.js"></script>
     <title>Confere - Pedidos</title>
 </head>
-<body class="h-screen flex bg-gray-200 items-center justify-center ">
+<body class="min-h-screen overflow-auto flex bg-gray-200 items-center justify-center ">
 <div class="flex w-6/12 border-2 bg-white shadow-sm border-gray-300 m-2 p-16 items-center justify-center">
     <form id="upload-form" method="post" enctype="multipart/form-data" action="uploadPlanilhas.php">
         <div id="box" class="flex justify-center items-center flex-col gap-4">
