@@ -186,8 +186,15 @@ document.addEventListener("DOMContentLoaded", function () {
                         const json = JSON.parse(xhr.responseText);
                         const listaLi = document.getElementById(`listaPedidos${nome}`).getElementsByTagName('li');
                         for (const elements of listaLi) {
+                            console.log(elements.id);
+                            if (json.status !== 'Success'){
+                                json.forEach(erros => {
+                                    if (erros.pedido !== elements.id) {
+                                        elements.classList.add('bg-green-300');
+                                    }
+                                })
+                            }
                             elements.classList.remove('bg-red-300', "tooltip", "tooltip-content", "tooltip-right");
-                            elements.classList.add('bg-white');
                         }
                         if (json.status === 'Success') {
                             alert('Solicitação concluída com sucesso!')
