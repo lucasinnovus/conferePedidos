@@ -1,5 +1,14 @@
 <?php
-include('includes/banco.php');
+require 'vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+if($_ENV['STAGE'] === 'prod'){
+    include('../includes/banco.php');
+}else{
+    include('includes/banco.php');
+}
 
 $json = file_get_contents('php://input');
 $data = json_decode($json, true);
